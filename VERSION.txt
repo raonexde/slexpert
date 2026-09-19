@@ -1,0 +1,14 @@
+12.4.0
+
+Customer, booking and B2B agent management:
+- customer self-registration, secure login, profile and travel dashboard
+- existing guest enquiries are linked when the customer registers with the same email
+- customer access to enquiries, bookings, balances, payments and printable documents
+- admin customer-account management with account activation and password reset
+- enquiry-to-booking conversion with booking references and travel dates
+- editable booking, payment and deposit statuses with manual payment history
+- B2B agency management with separate portal logins and editable commission percentages
+- B2B agents can submit and monitor their own client enquiries and bookings
+- strict customer/agent ownership checks for private travel documents
+- no demo customer or B2B agent accounts are inserted
+- all Version 12.2 pricing, Version 12.1 Maldives and Version 12 functionality preserved
