@@ -1,10 +1,28 @@
-# Testanleitung Version 12.4.2
+# Testanleitung Version 12.5
 
 ## Bestehende lokale Installation aktualisieren
 
 1. MySQL/MariaDB muss in XAMPP grün laufen.
 2. Datenbank und den bisherigen Websiteordner sichern.
-3. Die Dateien aus Version 12.4.2 über die bisherigen Website-Dateien kopieren.
+3. Die Dateien aus Version 12.5 über die bisherigen Website-Dateien kopieren.
+
+## Katalogtypen und Klassifizierungen
+
+1. Unter **Admin → Kategorien** prüfen, dass Unterkunft, Sehenswürdigkeit, Aktivitätszentrum, Restaurant, Gewürzgarten, Shop und Zusatzleistung vorhanden sind.
+2. Eine neue Unterkunft als Boutique-Hotel anlegen, Sterne und Verkaufssegment festlegen und Ausstattung in Deutsch und Englisch ergänzen.
+3. Ein Restaurant, einen Gewürzgarten und ein Aktivitätszentrum anlegen und dem gleichen Reiseziel zuordnen.
+4. Eine kostenlose Leistung sowie eine Leistung mit **Preis auf Anfrage** speichern.
+5. Reiseplaner und Einzelhotel-Planer öffnen. Klassifizierung und Sterne müssen angezeigt werden; kostenlose und angefragte Preise dürfen die Schätzung nicht erhöhen.
+6. Gewählte Angebote absenden und prüfen, dass sie in der gespeicherten Druckansicht unter dem richtigen Routenstopp erscheinen.
+
+## Mobile Darstellung
+
+1. Browserbreite auf 360–430 px stellen und den Reiseplaner öffnen.
+2. Ortsliste, Nächte, Hotels, Kategorien und Anfrage in den drei mobilen Schritten bedienen.
+3. Texte müssen ohne Zoomen lesbar und Schaltflächen bequem antippbar sein; es darf kein horizontales Scrollen geben.
+4. Google-Karte über **Karte anzeigen** öffnen und wieder schließen.
+5. Eine gespeicherte Druckansicht auf dem Smartphone öffnen. Reisedaten müssen zweispaltig und Routenstopps einspaltig in den Bildschirm passen.
+6. Strand-, Ayurveda- und Malediven-Planer öffnen. Hotel- und Leistungs-Karten müssen einspaltig und mit größerer Schrift erscheinen.
 
 ## Flughafen und wiederholte Orte
 

@@ -6,8 +6,8 @@ $stmt=db()->prepare("SELECT c.*,d.name_de AS atoll_de,d.name_en AS atoll_en,d.in
 $stmt->execute([$id]);$resort=$stmt->fetch();
 if(!$resort){http_response_code(404);$pageTitle=t('Resort nicht gefunden','Resort not found');require __DIR__.'/includes/public-header.php';echo '<main class="success-page"><section class="success-card"><h1>'.e($pageTitle).'</h1><a class="button button-dark" href="'.e(url('maldives.php?lang='.lang())).'">'.e(t('Zu den Resorts','View resorts')).'</a></section></main>';require __DIR__.'/includes/public-footer.php';exit;}
 $mealStmt=db()->prepare('SELECT * FROM accommodation_meal_plans WHERE catalog_item_id=? AND active=1 ORDER BY sort_order,id');$mealStmt->execute([$id]);$mealPlans=$mealStmt->fetchAll();
-$serviceStmt=db()->prepare("SELECT * FROM catalog_items WHERE destination_id=? AND type IN ('service','activity','sight','shop') AND maldives_available=1 AND active=1 ORDER BY type,featured DESC,sort_order,id");$serviceStmt->execute([$resort['destination_id']]);$services=$serviceStmt->fetchAll();
-$typeLabels=['service'=>t('Transfer / Leistung','Transfer / service'),'activity'=>t('Aktivität','Activity'),'sight'=>t('Ausflug','Excursion'),'shop'=>t('Shop','Shop')];
+$serviceStmt=db()->prepare("SELECT * FROM catalog_items WHERE destination_id=? AND type IN ('service','activity','sight','restaurant','spice_garden','shop') AND maldives_available=1 AND active=1 ORDER BY type,featured DESC,sort_order,id");$serviceStmt->execute([$resort['destination_id']]);$services=$serviceStmt->fetchAll();
+$typeLabels=['service'=>t('Transfer / Leistung','Transfer / service'),'activity'=>t('Aktivität','Activity'),'sight'=>t('Ausflug','Excursion'),'restaurant'=>t('Restaurant','Restaurant'),'spice_garden'=>t('Gewürzgarten','Spice garden'),'shop'=>t('Shop','Shop')];
 $pageTitle=$resort['name_'.lang()];$bodyClass='resort-page';$extraStyles=['css/maldives.css'];require __DIR__.'/includes/public-header.php';
 $hero=$resort['image_path']?url($resort['image_path']):asset('images/hero.jpg');
 ?>

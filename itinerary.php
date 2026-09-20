@@ -18,7 +18,7 @@ $_SESSION['lang'] = $request['language'] === 'en' ? 'en' : 'de';
 $routeStmt = db()->prepare('SELECT rd.*,d.name_de,d.name_en,d.region_de,d.region_en,d.latitude,d.longitude FROM tour_request_destinations rd JOIN destinations d ON d.id=rd.destination_id WHERE rd.request_id=? ORDER BY rd.sort_order');
 $routeStmt->execute([$request['id']]);
 $route = $routeStmt->fetchAll();
-$itemStmt = db()->prepare('SELECT ri.*,c.destination_id,c.type,c.name_de,c.name_en,c.meta_de,c.meta_en FROM tour_request_items ri JOIN catalog_items c ON c.id=ri.item_id LEFT JOIN tour_request_destinations rd ON rd.id=ri.request_destination_id WHERE ri.request_id=? ORDER BY COALESCE(rd.sort_order,9999),c.type,c.sort_order');
+$itemStmt = db()->prepare('SELECT ri.*,c.destination_id,c.type,c.name_de,c.name_en,c.meta_de,c.meta_en,c.star_rating,cc.name_de AS classification_de,cc.name_en AS classification_en FROM tour_request_items ri JOIN catalog_items c ON c.id=ri.item_id LEFT JOIN catalog_classifications cc ON cc.id=c.classification_id LEFT JOIN tour_request_destinations rd ON rd.id=ri.request_destination_id WHERE ri.request_id=? ORDER BY COALESCE(rd.sort_order,9999),c.type,c.sort_order');
 $itemStmt->execute([$request['id']]);
 $items = $itemStmt->fetchAll();
 $itemsByRouteStop = [];
@@ -33,7 +33,8 @@ foreach ($items as $item) {
 $settings = db()->query("SELECT setting_key,setting_value FROM settings WHERE setting_key IN ('google_maps_api_key','google_maps_map_id')")->fetchAll(PDO::FETCH_KEY_PAIR);
 $typeLabels = [
     'accommodation'=>t('Unterkunft','Accommodation'),'sight'=>t('Sehenswürdigkeit','Sight'),
-    'activity'=>t('Aktivität','Activity'),'shop'=>t('Shop','Shop'),'service'=>t('Zusatzleistung','Additional service'),
+    'activity'=>t('Aktivität','Activity'),'restaurant'=>t('Restaurant','Restaurant'),
+    'spice_garden'=>t('Gewürzgarten','Spice garden'),'shop'=>t('Shop','Shop'),'service'=>t('Zusatzleistung','Additional service'),
 ];
 $styleLabels = [
     'culture'=>t('Kultur & Genuss','Culture & food'),'nature'=>t('Natur & Safari','Nature & safari'),
@@ -73,7 +74,9 @@ $mapData = [
     <meta name="robots" content="noindex,nofollow">
     <title><?= e(t('Reiseverlauf','Itinerary')) ?> <?= e($documentReference) ?></title>
     <link rel="stylesheet" href="<?= e(asset('css/itinerary.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('css/itinerary-mobile.css')) ?>">
     <style>.journey-facts{grid-template-columns:repeat(7,1fr)}.vehicle-price-breakdown{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:-1px 0 12px;padding:13px 15px;border:1px solid rgba(21,56,46,.17);background:#f7f5ef}.vehicle-price-breakdown small{font-size:7px;letter-spacing:.12em;color:#737a74}.vehicle-price-breakdown strong{font:400 12px Georgia,serif;text-align:right}.travel-team{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 18px}.travel-team article{display:flex;align-items:center;gap:13px;border:1px solid rgba(21,56,46,.17);padding:10px;background:#fff}.travel-team img{width:95px;height:68px;object-fit:cover}.travel-team .guide-img{width:68px;height:68px;border-radius:50%}.travel-team div{display:flex;flex-direction:column;gap:4px}.travel-team small{font-size:7px;letter-spacing:.12em;color:#9b7229}.travel-team strong{font:400 15px Georgia,serif}.travel-team span{font-size:8px;color:#737a74;line-height:1.4}@media(max-width:760px){.vehicle-price-breakdown{align-items:flex-start;flex-direction:column}.vehicle-price-breakdown strong{text-align:left}.travel-team{grid-template-columns:1fr}}</style>
+    <style>@media(max-width:760px){.journey-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.vehicle-price-breakdown small,.travel-team small{font-size:10px}.vehicle-price-breakdown strong{font-size:14px}.travel-team strong{font-size:18px}.travel-team span{font-size:12px}}</style>
 </head>
 <body>
 <nav class="print-controls"><a href="<?= e($isAdmin ? url('admin/request.php?id=' . $request['id']) : ($isPortalAccess ? url('account/request.php?id='.(int)$request['id']) : url('success.php?ref=' . urlencode($reference) . '&lang=' . lang()))) ?>">← <?= e(t('Zurück','Back')) ?></a><button type="button" onclick="window.print()">⌁ <?= e(t('Route drucken / als PDF speichern','Print route / save as PDF')) ?></button></nav>
@@ -107,8 +110,11 @@ $mapData = [
                 <h3><?= e(lang()==='en'?$place['name_en']:$place['name_de']) ?></h3>
                 <?php if($placeItems): ?><ul><?php foreach($placeItems as $item): ?><li>
                     <b><?= e($typeLabels[$item['type']]??$item['type']) ?>:</b> <?= e(lang()==='en'?$item['name_en']:$item['name_de']) ?>
+                    <?php $classification=lang()==='en'?$item['classification_en']:$item['classification_de']; if($classification): ?> <em>· <?= e($classification) ?><?= (int)$item['star_rating']>0?' · '.str_repeat('★',(int)$item['star_rating']):'' ?></em><?php endif; ?>
                     <?php $meta=lang()==='en'?$item['meta_en']:$item['meta_de']; if($meta): ?> <em>· <?= e($meta) ?></em><?php endif; ?>
                     <?php if($item['type']==='accommodation'): ?> <em>· <?= (int)$item['room_count'] ?> <?= e((int)$item['room_count']===1?t('Doppelzimmer','double room'):t('Doppelzimmer','double rooms')) ?> · <?= e(money($item['unit_price'])) ?> / <?= e(t('Zimmer / Nacht','room / night')) ?></em>
+                    <?php elseif($item['price_basis']==='on_request'): ?> <em>· <?= e(t('Preis auf Anfrage','Price on request')) ?></em>
+                    <?php elseif($item['price_basis']==='free'): ?> <em>· <?= e(t('Kostenfrei','Free')) ?></em>
                     <?php elseif((float)$item['unit_price']>0): ?> <em>· <?= e(money($item['unit_price'])) ?> / <?= e(stay_price_basis_label($item['price_basis'])) ?></em>
                     <?php else: ?> <em>· <?= e(t('Inklusive','Included')) ?></em><?php endif; ?>
                     <?php if((float)$item['line_total']>0): ?> <em>· <?= e(t('Gesamt','Total')) ?> <?= e(money_precise($item['line_total'])) ?></em><?php endif; ?>

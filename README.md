@@ -1,4 +1,4 @@
-# Sri Lanka Expert · Version 12.4.2
+# Sri Lanka Expert · Version 12.5
 
 Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/MariaDB 10.4+.
 
@@ -6,6 +6,8 @@ Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/
 
 - German default language and English language switch
 - Responsive public website
+- Mobile planner with larger text, one-column cards, touch-friendly controls and a collapsible route map
+- Mobile itinerary and proposal views that fit the screen without horizontal scrolling
 - Rebranded public and admin interface for Sri Lanka Expert by Raonex GmbH
 - Mobile-first three-step tour planner with a full-screen searchable destination selector
 - Homepage destination explorer with featured places, search and experience filters
@@ -72,6 +74,10 @@ Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/
 - Admin tour builder for customer enquiries
 - Admin Beach, Ayurveda and Maldives stay builders
 - Destination and catalogue editing in German and English
+- Editable catalogue classifications for accommodation, sights, activity centres, restaurants, spice gardens, shops and additional services
+- Accommodation types including classified/luxury/beach/boutique/Ayurveda hotels, villas, eco/wildlife lodges, guest houses, homestays, apartments, hostels, camping and glamping
+- Separate official star rating and sales segment, plus SLTDA registration, facilities and internal supplier/contract fields
+- Services can be priced per person, per person/night, per booking, free or on request
 - Image upload for destinations and catalogue items
 - Web installation wizard
 - Prepared SQL statements, password hashing, CSRF protection and protected upload folder

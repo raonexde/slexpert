@@ -184,6 +184,8 @@ function stay_price_basis_label(string $basis): string
     return match ($basis) {
         'per_person_night' => t('pro Person / Nacht', 'per person / night'),
         'per_booking' => t('pro Buchung', 'per booking'),
+        'free' => t('kostenfrei', 'free'),
+        'on_request' => t('Preis auf Anfrage', 'price on request'),
         default => t('pro Person', 'per person'),
     };
 }
@@ -233,6 +235,7 @@ function calculate_stay_pricing(
         $lineTotal = match ($basis) {
             'per_person_night' => $unitPrice * $weightedGuests * $nights,
             'per_booking' => $unitPrice,
+            'free', 'on_request' => 0,
             default => $unitPrice * $weightedGuests,
         };
         $service['line_total'] = round($lineTotal, 2);

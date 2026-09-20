@@ -246,6 +246,8 @@ foreach ($validItems as &$row) {
         $row['line_total'] = round((float)$row['price_per_person'],2);
         $servicesCost += $row['line_total'];
         $baseServicesCost += (float)$row['base_price_per_person'];
+    } elseif (in_array($row['price_basis'], ['free','on_request'], true)) {
+        $row['line_total'] = 0.0;
     } else {
         $row['line_total'] = round((float)$row['price_per_person'] * $travelers,2);
         $servicesCost += $row['line_total'];

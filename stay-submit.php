@@ -81,7 +81,7 @@ if ($serviceIds) {
     $placeholders = implode(',',array_fill(0,count($serviceIds),'?'));
     $serviceStmt = db()->prepare(
         "SELECT * FROM catalog_items
-         WHERE id IN ($placeholders) AND destination_id=? AND type IN ('sight','activity','shop','service')
+         WHERE id IN ($placeholders) AND destination_id=? AND type IN ('sight','activity','restaurant','spice_garden','shop','service')
            AND active=1 AND $availabilityColumn=1"
     );
     $serviceStmt->execute(array_merge($serviceIds,[(int)$hotel['destination_id']]));

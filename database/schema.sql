@@ -35,18 +35,48 @@ CREATE TABLE IF NOT EXISTS destinations (
     INDEX idx_destinations_country (country_code, active, sort_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS catalog_classifications (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    item_type VARCHAR(40) NOT NULL,
+    code VARCHAR(80) NOT NULL,
+    name_de VARCHAR(160) NOT NULL,
+    name_en VARCHAR(160) NOT NULL,
+    active TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_catalog_classification (item_type, code),
+    INDEX idx_catalog_classification_type (item_type, active, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS catalog_items (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     destination_id INT UNSIGNED NOT NULL,
-    type ENUM('accommodation','sight','activity','shop','service') NOT NULL,
+    type ENUM('accommodation','sight','activity','restaurant','spice_garden','shop','service') NOT NULL,
+    classification_id INT UNSIGNED NULL,
+    star_rating TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    market_segment VARCHAR(30) NOT NULL DEFAULT '',
+    sltda_registration_number VARCHAR(120) NOT NULL DEFAULT '',
+    sltda_registration_expiry DATE NULL,
     name_de VARCHAR(190) NOT NULL,
     name_en VARCHAR(190) NOT NULL,
     description_de TEXT NOT NULL,
     description_en TEXT NOT NULL,
     meta_de VARCHAR(255) NOT NULL DEFAULT '',
     meta_en VARCHAR(255) NOT NULL DEFAULT '',
+    facilities_de TEXT NOT NULL,
+    facilities_en TEXT NOT NULL,
+    opening_hours_de VARCHAR(255) NOT NULL DEFAULT '',
+    opening_hours_en VARCHAR(255) NOT NULL DEFAULT '',
+    duration_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    booking_required TINYINT(1) NOT NULL DEFAULT 0,
+    supplier_name VARCHAR(190) NOT NULL DEFAULT '',
+    supplier_contact TEXT NOT NULL,
+    contract_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+    commission_percent DECIMAL(5,2) NOT NULL DEFAULT 0,
+    internal_notes TEXT NOT NULL,
     price_per_person DECIMAL(10,2) NOT NULL DEFAULT 0,
-    price_basis ENUM('per_person','per_person_night','per_booking') NOT NULL DEFAULT 'per_person',
+    price_basis ENUM('per_person','per_person_night','per_booking','free','on_request') NOT NULL DEFAULT 'per_person',
     beach_available TINYINT(1) NOT NULL DEFAULT 0,
     ayurveda_available TINYINT(1) NOT NULL DEFAULT 0,
     maldives_available TINYINT(1) NOT NULL DEFAULT 0,
@@ -64,6 +94,7 @@ CREATE TABLE IF NOT EXISTS catalog_items (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_catalog_destination FOREIGN KEY (destination_id) REFERENCES destinations(id) ON DELETE CASCADE,
     INDEX idx_catalog_destination_type (destination_id, type, active, sort_order),
+    INDEX idx_catalog_classification_id (classification_id),
     INDEX idx_catalog_maldives (maldives_available, active, type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

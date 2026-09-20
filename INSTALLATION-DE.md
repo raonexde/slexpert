@@ -30,15 +30,17 @@
 
 Die Datenbank, Tabellen und ersten Beispielinhalte werden automatisch erstellt.
 
-Version 12.4.2 verwendet **Sri Lanka Expert by Raonex GmbH** als Standardmarke. Firmenadresse, Telefon, E-Mail, Website und Social-Media-Links können danach unter **Admin → Einstellungen** bearbeitet werden. Nicht ausgefüllte Social-Media-Links werden im Footer nicht angezeigt.
+Version 12.5 verwendet **Sri Lanka Expert by Raonex GmbH** als Standardmarke. Firmenadresse, Telefon, E-Mail, Website und Social-Media-Links können danach unter **Admin → Einstellungen** bearbeitet werden. Nicht ausgefüllte Social-Media-Links werden im Footer nicht angezeigt.
 
-## Aktualisierung auf Version 12.4.2
+## Aktualisierung auf Version 12.5
 
 1. Datenbank sowie die Ordner `uploads` und `storage` sichern.
-2. Die Dateien aus Version 12.4.2 über die bisherigen Programmdateien kopieren. Vorhandene `config.local.php`, Uploads und gespeicherte Dokumente nicht löschen.
-3. Eine beliebige Seite öffnen. Die vorhandenen Migrationen werden automatisch einmal ausgeführt. Version 12.4.2 ergänzt die Farbcodierung im Routenplaner: einmal gewählt hellgrün, mehrfach gewählt grün und 0 Nächte orange.
+2. Die Dateien aus Version 12.5 über die bisherigen Programmdateien kopieren. Vorhandene `config.local.php`, Uploads und gespeicherte Dokumente nicht löschen.
+3. Eine beliebige Seite öffnen. Die Migration `017_catalog_classifications_and_mobile.php` wird automatisch einmal ausgeführt. Sie ergänzt Klassifizierungen und neue Katalogfelder, ohne vorhandene Reisebausteine oder Preise zu ersetzen.
 4. Unter **Admin → Fahrzeugflotte** Fahrzeugbilder ergänzen.
 5. Unter **Admin → Reiseleiter** eingegangene Registrierungen prüfen. Ein Profil wird nur im Planer angezeigt, wenn der Status **Freigegeben** und die Checkbox **Aktiv** gesetzt sind.
+
+Unter **Admin → Kategorien** können Unterkunftsarten und Unterkategorien für Sehenswürdigkeiten, Aktivitätszentren, Restaurants, Gewürzgärten, Shops und Zusatzleistungen jederzeit ergänzt, übersetzt, sortiert oder deaktiviert werden. Unter **Admin → Reisebausteine** besitzt jedes Angebot zusätzlich Klassifizierung, Sterne, Verkaufssegment, Ausstattung, Öffnungszeiten, Reservierungspflicht und interne Lieferantenfelder.
 
 Der Webserver muss Schreibrechte für `uploads` und `storage/guide-documents` besitzen. Apache schützt den gesamten Ordner `storage` über die mitgelieferte `.htaccess`. Bei einem anderen Webserver muss der direkte Webzugriff auf `storage` ebenfalls ausdrücklich gesperrt werden.
 

@@ -24,7 +24,7 @@ $priceStmt->execute([$tour['id']]);
 $prices=$priceStmt->fetchAll();
 $settings = db()->query("SELECT setting_key,setting_value FROM settings WHERE setting_key IN ('google_maps_api_key','google_maps_map_id')")->fetchAll(PDO::FETCH_KEY_PAIR);
 $categoryLabels=['winter'=>t('Winterurlaub','Winter holiday'),'summer'=>t('Sommerurlaub','Summer holiday'),'sport'=>t('Sport & Abenteuer','Sport & adventure'),'culture'=>t('Kultur','Culture'),'discovery'=>t('Kennenlernen','Discovery'),'backpacker'=>t('Backpacker','Backpacker'),'ayurveda'=>t('Ayurveda & Rundreise','Ayurveda & touring'),'family'=>t('Familie','Family'),'luxury'=>t('Luxus','Luxury')];
-$typeLabels=['accommodation'=>t('Unterkunft','Accommodation'),'sight'=>t('Sehenswürdigkeit','Sight'),'activity'=>t('Aktivität','Activity'),'shop'=>t('Lokaler Shop','Local shop'),'service'=>t('Zusatzleistung','Additional service')];
+$typeLabels=['accommodation'=>t('Unterkunft','Accommodation'),'sight'=>t('Sehenswürdigkeit','Sight'),'activity'=>t('Aktivität','Activity'),'restaurant'=>t('Restaurant','Restaurant'),'spice_garden'=>t('Gewürzgarten','Spice garden'),'shop'=>t('Lokaler Shop','Local shop'),'service'=>t('Zusatzleistung','Additional service')];
 $pageTitle=$tour['title_'.lang()];
 $bodyClass='tour-detail-page';
 $extraStyles=['css/tours.css'];

@@ -4,8 +4,10 @@ require __DIR__ . '/includes/bootstrap.php';
 
 $destinations = db()->query("SELECT * FROM destinations WHERE active = 1 AND country_code='LK' ORDER BY sort_order, name_de")->fetchAll();
 $items = db()->query(
-    "SELECT c.*, d.code AS destination_code, d.accent AS destination_accent
+    "SELECT c.*, d.code AS destination_code, d.accent AS destination_accent,
+            cc.name_de AS classification_de, cc.name_en AS classification_en
      FROM catalog_items c JOIN destinations d ON d.id = c.destination_id
+     LEFT JOIN catalog_classifications cc ON cc.id=c.classification_id
      WHERE c.active = 1 AND d.active = 1 AND d.country_code='LK'
      ORDER BY c.destination_id, c.type, c.sort_order, c.name_de"
 )->fetchAll();
@@ -89,6 +91,11 @@ $plannerData = [
             'type' => $row['type'], 'name_de' => $row['name_de'], 'name_en' => $row['name_en'],
             'description_de' => $row['description_de'], 'description_en' => $row['description_en'],
             'meta_de' => $row['meta_de'], 'meta_en' => $row['meta_en'],
+            'classification_de' => $row['classification_de'] ?? '', 'classification_en' => $row['classification_en'] ?? '',
+            'star_rating' => (int)$row['star_rating'], 'market_segment' => $row['market_segment'],
+            'facilities_de' => $row['facilities_de'], 'facilities_en' => $row['facilities_en'],
+            'opening_hours_de' => $row['opening_hours_de'], 'opening_hours_en' => $row['opening_hours_en'],
+            'duration_minutes' => (int)$row['duration_minutes'], 'booking_required' => (bool)$row['booking_required'],
             'price' => price_with_markup((float)$row['price_per_person']), 'price_basis'=>$row['price_basis'], 'featured' => (bool)$row['featured'],
             'code' => $row['destination_code'], 'accent' => $row['destination_accent'],
             'image' => $row['image_path'] ? url($row['image_path']) : '',
@@ -123,6 +130,8 @@ $plannerData = [
         'nights' => t('Nächte', 'nights'), 'night' => t('Nacht', 'night'),
         'choose' => t('Auswählen', 'Choose'), 'chosen' => t('Gewählt', 'Chosen'),
         'included' => t('Inklusive', 'Included'), 'person' => t('Pers.', 'person'),
+        'free' => t('Kostenfrei', 'Free'), 'onRequest' => t('Preis auf Anfrage', 'Price on request'),
+        'bookingRequired' => t('Reservierung erforderlich', 'Reservation required'),
         'empty' => t('Für diese Kategorie sind noch keine Angebote hinterlegt.', 'No options have been added to this category yet.'),
         'from' => t('ab', 'from'),
         'mapTitle' => t('Ihre Fahrroute', 'Your driving route'),
@@ -158,6 +167,8 @@ $plannerData = [
         'typeAccommodation' => t('Unterkunft', 'Accommodation'),
         'typeSight' => t('Sehenswürdigkeit', 'Sight'),
         'typeActivity' => t('Aktivität', 'Activity'),
+        'typeRestaurant' => t('Restaurant', 'Restaurant'),
+        'typeSpice_garden' => t('Gewürzgarten', 'Spice garden'),
         'typeShop' => t('Lokaler Shop', 'Local shop'),
         'typeService' => t('Zusatzleistung', 'Additional service'),
         'selectDestination' => t('Wählen Sie ein Reiseziel', 'Choose a destination'),
@@ -229,8 +240,8 @@ $plannerData = [
                     <label><?= e(t('Gesamtnächte', 'Total nights')) ?><input type="number" name="duration" data-trip-duration min="0" max="280" readonly value="0"><small><?= e(t('Summe der gewählten Nächte', 'Sum of the selected nights')) ?></small></label>
                     <label><?= e(t('Reisestil', 'Travel style')) ?><select name="travel_style"><option value="culture"<?= selected('culture', $initialStyle) ?>><?= e(t('Kultur & Genuss', 'Culture & food')) ?></option><option value="nature"<?= selected('nature', $initialStyle) ?>><?= e(t('Natur & Safari', 'Nature & safari')) ?></option><option value="ayurveda"<?= selected('ayurveda', $initialStyle) ?>><?= e(t('Ayurveda & Ruhe', 'Ayurveda & calm')) ?></option><option value="family"<?= selected('family', $initialStyle) ?>><?= e(t('Familienreise', 'Family journey')) ?></option></select></label>
                 </div>
-                <section class="route-map-card" aria-labelledby="route-map-title">
-                    <div class="route-map-heading"><div><p>GOOGLE MAPS</p><h3 id="route-map-title"><?= e(t('Ihre Fahrroute', 'Your driving route')) ?></h3></div><div class="route-metrics"><span><small><?= e(t('Fahrstrecke', 'Driving distance')) ?></small><strong data-route-distance>—</strong></span><span><small><?= e(t('Fahrzeit', 'Driving time')) ?></small><strong data-route-duration>—</strong></span></div></div>
+                <section class="route-map-card" aria-labelledby="route-map-title" data-route-map-card>
+                    <div class="route-map-heading"><div><p>GOOGLE MAPS</p><h3 id="route-map-title"><?= e(t('Ihre Fahrroute', 'Your driving route')) ?></h3></div><div class="route-metrics"><span><small><?= e(t('Fahrstrecke', 'Driving distance')) ?></small><strong data-route-distance>—</strong></span><span><small><?= e(t('Fahrzeit', 'Driving time')) ?></small><strong data-route-duration>—</strong></span></div><button class="mobile-map-toggle" type="button" data-mobile-map-toggle data-show-label="<?= e(t('Karte anzeigen','Show map')) ?>" data-hide-label="<?= e(t('Karte schließen','Hide map')) ?>"><?= e(t('Karte anzeigen','Show map')) ?></button></div>
                     <div class="google-route-map"><div class="map-canvas" data-google-route-map></div><div class="map-placeholder visible" data-map-status><?= e(t('Karte wird vorbereitet …', 'Preparing map…')) ?></div></div>
                 </section>
                 <section class="planner-print-itinerary print-only"><h2><?= e(t('Reiseverlauf', 'Journey route')) ?></h2><p class="planner-print-vehicle"><span><?= e(t('Fahrzeug', 'Vehicle')) ?></span><strong data-print-vehicle>—</strong></p><p class="planner-print-vehicle" data-print-guide-row hidden><span><?= e(t('Reiseleitung', 'Tour guide')) ?></span><strong data-print-guide>—</strong></p><ol data-print-route-list></ol></section>
@@ -238,6 +249,8 @@ $plannerData = [
                     <button type="button" data-type="accommodation" class="active"><?= e(t('Unterkunft', 'Accommodation')) ?></button>
                     <button type="button" data-type="sight"><?= e(t('Sehenswertes', 'Sights')) ?></button>
                     <button type="button" data-type="activity"><?= e(t('Aktivitäten', 'Activities')) ?></button>
+                    <button type="button" data-type="restaurant"><?= e(t('Restaurants', 'Restaurants')) ?></button>
+                    <button type="button" data-type="spice_garden"><?= e(t('Gewürzgärten', 'Spice gardens')) ?></button>
                     <button type="button" data-type="shop"><?= e(t('Lokale Shops', 'Local shops')) ?></button>
                     <button type="button" data-type="service"><?= e(t('Zusatzleistungen', 'Additional services')) ?></button>
                 </div>

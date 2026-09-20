@@ -7,8 +7,10 @@ $availabilityColumn = match ($stayType) { 'ayurveda'=>'ayurveda_available', 'mal
 $countryCode = $stayType === 'maldives' ? 'MV' : 'LK';
 $hotelStmt = db()->prepare(
     "SELECT c.*,d.name_de AS destination_name_de,d.name_en AS destination_name_en,
-            d.region_de,d.region_en,d.code AS destination_code,d.accent AS destination_accent
+            d.region_de,d.region_en,d.code AS destination_code,d.accent AS destination_accent,
+            cc.name_de AS classification_de,cc.name_en AS classification_en
      FROM catalog_items c JOIN destinations d ON d.id=c.destination_id
+     LEFT JOIN catalog_classifications cc ON cc.id=c.classification_id
      WHERE c.type='accommodation' AND c.active=1 AND d.active=1 AND d.country_code=? AND c.$availabilityColumn=1
      ORDER BY d.sort_order,c.featured DESC,c.sort_order,c.name_de"
 );
@@ -23,9 +25,11 @@ if ($hotelIds) {
     foreach ($mealStmt->fetchAll() as $mealPlan) $mealPlansByHotel[(int)$mealPlan['catalog_item_id']][] = $mealPlan;
 }
 $serviceStmt = db()->prepare(
-    "SELECT c.*,d.code AS destination_code,d.accent AS destination_accent
+    "SELECT c.*,d.code AS destination_code,d.accent AS destination_accent,
+            cc.name_de AS classification_de,cc.name_en AS classification_en
      FROM catalog_items c JOIN destinations d ON d.id=c.destination_id
-     WHERE c.type IN ('sight','activity','shop','service') AND c.active=1 AND d.active=1 AND d.country_code=? AND c.$availabilityColumn=1
+     LEFT JOIN catalog_classifications cc ON cc.id=c.classification_id
+     WHERE c.type IN ('sight','activity','restaurant','spice_garden','shop','service') AND c.active=1 AND d.active=1 AND d.country_code=? AND c.$availabilityColumn=1
      ORDER BY c.destination_id,c.type,c.featured DESC,c.sort_order,c.name_de"
 );
 $serviceStmt->execute([$countryCode]);
@@ -61,6 +65,9 @@ $stayData = [
             'name_de'=>$hotel['name_de'],'name_en'=>$hotel['name_en'],
             'description_de'=>$hotel['description_de'],'description_en'=>$hotel['description_en'],
             'meta_de'=>$hotel['meta_de'],'meta_en'=>$hotel['meta_en'],
+            'classification_de'=>$hotel['classification_de']??'','classification_en'=>$hotel['classification_en']??'',
+            'star_rating'=>(int)$hotel['star_rating'],'market_segment'=>$hotel['market_segment'],
+            'facilities_de'=>$hotel['facilities_de'],'facilities_en'=>$hotel['facilities_en'],
             'destination_name_de'=>$hotel['destination_name_de'],'destination_name_en'=>$hotel['destination_name_en'],
             'region_de'=>$hotel['region_de'],'region_en'=>$hotel['region_en'],
             'code'=>$hotel['destination_code'],'accent'=>$hotel['destination_accent'],
@@ -84,6 +91,7 @@ $stayData = [
         'name_de'=>$service['name_de'],'name_en'=>$service['name_en'],
         'description_de'=>$service['description_de'],'description_en'=>$service['description_en'],
         'meta_de'=>$service['meta_de'],'meta_en'=>$service['meta_en'],
+        'classification_de'=>$service['classification_de']??'','classification_en'=>$service['classification_en']??'',
         'price'=>price_with_markup((float)$service['price_per_person']),'price_basis'=>$service['price_basis'],
         'image'=>$service['image_path']?url($service['image_path']):'',
         'featured'=>(bool)$service['featured'],'code'=>$service['destination_code'],'accent'=>$service['destination_accent'],
@@ -104,7 +112,9 @@ $stayData = [
         'pricingRule'=>t('Zimmerpreis × Zimmer × Nächte. %g Standardgäste pro Zimmer; Zusatzbett +%e %. Kinder bis %a Jahre zahlen %c % des entsprechenden Erwachsenen-Zuschlags.','Room rate × rooms × nights. %g standard guests per room; extra bed +%e%. Children up to age %a pay %c% of the corresponding adult supplement.'),
         'allInclusiveRequired'=>t('Ayurveda-Aufenthalte beinhalten verpflichtend All-inclusive.','Ayurveda retreats require all-inclusive.'),
         'typeSight'=>t('Ausflüge','Excursions'),'typeActivity'=>t('Aktivitäten','Activities'),
+        'typeRestaurant'=>t('Restaurants','Restaurants'),'typeSpiceGarden'=>t('Gewürzgärten','Spice gardens'),
         'typeShop'=>t('Lokale Shops','Local shops'),'typeService'=>t('Zusatzleistungen','Additional services'),
+        'free'=>t('Kostenfrei','Free'),'onRequest'=>t('Preis auf Anfrage','Price on request'),
         'emptyHotels'=>t('Noch keine passenden Hotels eingerichtet. Aktivieren Sie Hotels im Admin für diesen Bereich.','No matching hotels are configured yet. Enable hotels for this section in admin.'),
     ],
 ];
@@ -166,6 +176,8 @@ $stayData = [
                         <button type="button" data-service-type="service" class="active"><?= e(t('Leistungen','Services')) ?></button>
                         <button type="button" data-service-type="sight"><?= e(t('Ausflüge','Excursions')) ?></button>
                         <button type="button" data-service-type="activity"><?= e(t('Aktivitäten','Activities')) ?></button>
+                        <button type="button" data-service-type="restaurant"><?= e(t('Restaurants','Restaurants')) ?></button>
+                        <button type="button" data-service-type="spice_garden"><?= e(t('Gewürzgärten','Spice gardens')) ?></button>
                         <button type="button" data-service-type="shop"><?= e(t('Lokale Shops','Local shops')) ?></button>
                     </nav>
                     <div class="stay-service-grid" data-service-grid></div>

@@ -1,4 +1,15 @@
-12.4.2
+12.5
+
+Catalogue classifications and mobile usability:
+- editable accommodation classifications covering hotels, resorts, villas, Ayurveda, eco/wildlife stays, guest houses, homestays, apartments, hostels and camping
+- separate restaurant, spice-garden, activity-centre, shop, sight and additional-service categories
+- star rating, market segment, SLTDA registration, facilities, opening hours and booking requirements
+- private supplier, contract-price, commission and internal-note fields
+- free and price-on-request service modes
+- classification information shown in tour and single-hotel planners
+- larger mobile text, one-column selection cards and touch-friendly controls
+- collapsible route map on phones and a screen-fitting mobile itinerary
+- all existing Version 12.4.2 route, fleet, guide, customer, booking and B2B features preserved
 
 Customer, booking and B2B agent management:
 - customer self-registration, secure login, profile and travel dashboard

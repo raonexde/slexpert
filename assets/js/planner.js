@@ -58,6 +58,8 @@
     var mobileViewButtons = Array.from(document.querySelectorAll('[data-mobile-view]'));
     var mobileRouteCounts = Array.from(document.querySelectorAll('[data-mobile-route-count]'));
     var mobileEstimate = document.querySelector('[data-mobile-estimate]');
+    var routeMapCard = document.querySelector('[data-route-map-card]');
+    var mobileMapToggle = document.querySelector('[data-mobile-map-toggle]');
 
     function isMobilePlanner() {
         return window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
@@ -134,11 +136,22 @@
         return data.labels[key] || type;
     }
     function servicePriceText(item) {
+        if (item.price_basis === 'free') return data.labels.free;
+        if (item.price_basis === 'on_request') return data.labels.onRequest;
         if (Number(item.price) <= 0) return data.labels.included;
         if (item.type === 'accommodation') return formatter.format(item.price) + ' / ' + data.labels.perRoomNight;
         if (item.price_basis === 'per_person_night') return formatter.format(item.price) + ' / ' + data.labels.perPersonNightService;
         if (item.price_basis === 'per_booking') return formatter.format(item.price) + ' / ' + data.labels.perBooking;
         return formatter.format(item.price) + ' / ' + data.labels.perPerson;
+    }
+    function itemClassificationText(item) {
+        var parts = [];
+        var classification = text(item, 'classification');
+        if (classification) parts.push(classification);
+        if (Number(item.star_rating) > 0) parts.push(Number(item.star_rating) + '★');
+        if (item.market_segment) parts.push(String(item.market_segment).replace('_', '-'));
+        if (item.booking_required) parts.push(data.labels.bookingRequired);
+        return parts.join(' · ');
     }
     function serviceDetails(item, key) {
         var details = [];
@@ -404,10 +417,11 @@
             var isSelected = selectedItems.has(key);
             var priceUnit = item.type === 'accommodation' ? data.labels.perRoomNight : (item.price_basis === 'per_person_night' ? data.labels.perPersonNightService : (item.price_basis === 'per_booking' ? data.labels.perBooking : data.labels.person));
             var background = item.image ? ' style="background-image:linear-gradient(rgba(10,40,32,.15),rgba(10,40,32,.5)),url(' + esc(item.image) + ')"' : '';
+            var classificationText = itemClassificationText(item);
             var optionCard = '<button class="catalog-option' + (isSelected ? ' selected' : '') + '" type="button" data-item="' + item.id + '">' +
                 '<span class="option-visual accent-' + esc(item.accent) + '"' + background + '><span>' + esc(item.code) + '</span>' + (item.featured ? '<b>OUR PICK</b>' : '') + '</span>' +
-                '<span class="option-info"><p>' + esc(text(item, 'description')) + '</p><h3>' + esc(text(item, 'name')) + '</h3><small>' + esc(text(item, 'meta')) + '</small>' +
-                '<span class="option-bottom"><strong>' + (item.price > 0 ? esc(formatter.format(item.price)) + ' / ' + esc(priceUnit) : esc(data.labels.included)) + '</strong><span class="choose-chip">' + (isSelected ? '✓ ' + esc(data.labels.chosen) : '+ ' + esc(data.labels.choose)) + '</span></span></span></button>';
+                '<span class="option-info"><p>' + esc(text(item, 'description')) + '</p><h3>' + esc(text(item, 'name')) + '</h3>' + (classificationText ? '<span class="option-classification">' + esc(classificationText) + '</span>' : '') + '<small>' + esc(text(item, 'meta')) + '</small>' +
+                '<span class="option-bottom"><strong>' + esc(servicePriceText(item)) + '</strong><span class="choose-chip">' + (isSelected ? '✓ ' + esc(data.labels.chosen) : '+ ' + esc(data.labels.choose)) + '</span></span></span></button>';
             if (!isSelected || item.type !== 'accommodation') return '<div class="catalog-item-wrap">' + optionCard + '</div>';
 
             var people = Math.max(1, Number(travelers.value || 1));
@@ -691,6 +705,25 @@
     document.querySelectorAll('[data-mobile-close]').forEach(function (button) {
         button.addEventListener('click', function () { setMobileView(routeStops.length ? 'builder' : 'route'); });
     });
+    function updateMobileMapToggle() {
+        if (!routeMapCard || !mobileMapToggle) return;
+        var collapsed = routeMapCard.classList.contains('mobile-collapsed');
+        mobileMapToggle.textContent = collapsed ? mobileMapToggle.getAttribute('data-show-label') : mobileMapToggle.getAttribute('data-hide-label');
+        mobileMapToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    }
+    if (routeMapCard && mobileMapToggle) {
+        if (isMobilePlanner()) routeMapCard.classList.add('mobile-collapsed');
+        updateMobileMapToggle();
+        mobileMapToggle.addEventListener('click', function () {
+            routeMapCard.classList.toggle('mobile-collapsed');
+            updateMobileMapToggle();
+            if (!routeMapCard.classList.contains('mobile-collapsed')) scheduleRouteMap();
+        });
+        window.addEventListener('resize', function () {
+            if (!isMobilePlanner()) routeMapCard.classList.remove('mobile-collapsed');
+            updateMobileMapToggle();
+        });
+    }
     travelers.addEventListener('change', function () { normaliseRoomCounts(); renderAll(); });
     if (vehicleSelect) vehicleSelect.addEventListener('change', function () {
         selectedVehicleId = Number(vehicleSelect.value || 0);

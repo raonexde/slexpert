@@ -1,0 +1,13 @@
+/* Version 12.5 responsive on-screen itinerary */
+@media(max-width:760px){
+  body{max-width:100%;overflow-x:hidden;font-size:16px}
+  .print-controls{position:sticky;z-index:5;top:0;margin:0;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line)}
+  .print-controls a{font-size:13px}.print-controls button{min-height:46px;padding:11px 13px;font-size:11px}
+  .itinerary-sheet{width:100%;margin:0;padding:22px 15px;box-shadow:none}
+  .itinerary-header{align-items:flex-start;gap:14px;flex-direction:column}.itinerary-brand strong{font-size:18px}.itinerary-brand small,.itinerary-ref small{font-size:10px}.itinerary-ref{text-align:left}.itinerary-ref strong{font-size:18px}
+  .itinerary-title{padding:28px 0;text-align:left}.itinerary-title>p{font-size:11px}.itinerary-title h1{font-size:32px;line-height:1.12}.itinerary-title span{font-size:13px}
+  .journey-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.journey-facts>div{min-height:82px;padding:14px 11px}.journey-facts small{font-size:10px;line-height:1.35}.journey-facts strong{font-size:14px;line-height:1.4}
+  .itinerary-map-heading{min-height:0;padding:15px}.itinerary-map-heading small{font-size:10px}.itinerary-map-heading h2{font-size:22px}.itinerary-map-heading>span{font-size:12px}.itinerary-map{height:265px}.itinerary-map-status{top:98px;font-size:13px}
+  .route-section{padding:30px 0 18px}.route-section>h2{font-size:27px}.section-kicker{font-size:10px}.route-stop{grid-template-columns:42px minmax(0,1fr);gap:12px;padding:17px 2px}.route-stop>span{width:38px;height:38px;font-size:13px}.route-stop-main>small{font-size:10px}.route-stop-main h3{font-size:21px}.route-stop-main ul{gap:8px;font-size:13px;line-height:1.5}.route-stop>strong{grid-column:2;margin-top:0;font-size:13px;color:#9b7229}
+  .itinerary-bottom{grid-template-columns:1fr}.itinerary-bottom>div{padding:18px}.itinerary-bottom small{font-size:10px}.itinerary-bottom strong{font-size:30px}.itinerary-bottom p{font-size:13px;line-height:1.6}.itinerary-footer{align-items:flex-start;gap:8px;flex-direction:column;font-size:10px;line-height:1.4}
+}

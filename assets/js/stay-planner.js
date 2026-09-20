@@ -46,6 +46,8 @@
     function priceBasisLabel(basis) {
         if (basis === 'per_person_night') return data.labels.perPersonNight;
         if (basis === 'per_booking') return data.labels.perBooking;
+        if (basis === 'free') return data.labels.free;
+        if (basis === 'on_request') return data.labels.onRequest;
         return data.labels.perPerson;
     }
     function renderNights() {
@@ -74,9 +76,12 @@
         hotelGrid.innerHTML = hotels.map(function (item) {
             var chosen = Number(item.id) === Number(selectedHotelId);
             var image = item.image ? ' style="background-image:linear-gradient(rgba(12,45,37,.1),rgba(12,45,37,.55)),url(' + esc(item.image) + ')"' : '';
+            var classification = text(item, 'classification');
+            var stars = Number(item.star_rating || 0) > 0 ? ' · ' + '★'.repeat(Number(item.star_rating)) : '';
+            var segment = item.market_segment ? ' · ' + String(item.market_segment).replace('_', ' ') : '';
             return '<article class="stay-hotel' + (chosen ? ' selected' : '') + '">' +
                 '<div class="stay-hotel-image accent-' + esc(item.accent) + '"' + image + '><span>' + esc(item.code) + '</span>' + (item.featured ? '<b>OUR PICK</b>' : '') + '</div>' +
-                '<div><p>' + esc(text(item, 'destination_name')) + ' · ' + esc(text(item, 'region')) + '</p><h3>' + esc(text(item, 'name')) + '</h3><small>' + esc(text(item, 'meta')) + '</small>' +
+                '<div><p>' + esc(text(item, 'destination_name')) + ' · ' + esc(text(item, 'region')) + '</p><h3>' + esc(text(item, 'name')) + '</h3>' + (classification ? '<span class="stay-hotel-classification">' + esc(classification + stars + segment) + '</span>' : '') + '<small>' + esc(text(item, 'meta')) + '</small>' +
                 '<div class="stay-hotel-price"><strong>' + esc(formatter.format(item.rate)) + '</strong><span>' + esc(data.labels.perRoomNight) + '</span></div>' +
                 '<button type="button" data-select-hotel="' + item.id + '">' + (chosen ? '✓ ' + esc(data.labels.chosen) : '+ ' + esc(data.labels.chooseHotel)) + '</button></div></article>';
         }).join('');
@@ -133,6 +138,8 @@
         mealNote.textContent = data.type === 'ayurveda' ? data.labels.allInclusiveRequired : '';
     }
     function servicePrice(service) {
+        if (service.price_basis === 'free') return data.labels.free;
+        if (service.price_basis === 'on_request') return data.labels.onRequest;
         if (Number(service.price) <= 0) return data.labels.included;
         return formatter.format(service.price) + ' · ' + priceBasisLabel(service.price_basis);
     }
@@ -151,7 +158,7 @@
         }
         serviceGrid.innerHTML = services.map(function (service) {
             var chosen = selectedServices.has(service.id);
-            return '<button type="button" class="stay-service' + (chosen ? ' selected' : '') + '" data-service="' + service.id + '"><span>' + (chosen ? '✓' : '+') + '</span><div><small>' + esc(service.type) + '</small><strong>' + esc(text(service, 'name')) + '</strong><p>' + esc(text(service, 'description')) + '</p><em>' + esc(servicePrice(service)) + '</em></div></button>';
+            return '<button type="button" class="stay-service' + (chosen ? ' selected' : '') + '" data-service="' + service.id + '"><span>' + (chosen ? '✓' : '+') + '</span><div><small>' + esc(text(service, 'classification') || service.type) + '</small><strong>' + esc(text(service, 'name')) + '</strong><p>' + esc(text(service, 'description')) + '</p><em>' + esc(servicePrice(service)) + '</em></div></button>';
         }).join('');
         serviceGrid.querySelectorAll('[data-service]').forEach(function (button) {
             button.addEventListener('click', function () {
