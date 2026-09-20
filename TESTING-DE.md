@@ -1,10 +1,10 @@
-# Testanleitung Version 12.4.1
+# Testanleitung Version 12.4.2
 
 ## Bestehende lokale Installation aktualisieren
 
 1. MySQL/MariaDB muss in XAMPP grün laufen.
 2. Datenbank und den bisherigen Websiteordner sichern.
-3. Die Dateien aus Version 12.4.1 über die bisherigen Website-Dateien kopieren.
+3. Die Dateien aus Version 12.4.2 über die bisherigen Website-Dateien kopieren.
 
 ## Flughafen und wiederholte Orte
 
@@ -14,6 +14,14 @@
 4. Alternativ im Suchfeld nach dem bereits gewählten Ort suchen und **Bereits gewählt · nochmals hinzufügen** anklicken.
 5. Für den ersten oder letzten Stopp 0 Nächte wählen und die Anfrage absenden.
 6. Prüfen, dass beide Vorkommen in Google Maps, Zusammenfassung, gespeicherter Anfrage und Druckansicht in der richtigen Reihenfolge erscheinen.
+
+## Farbcodierung der Route
+
+1. Einen Ort einmal hinzufügen: Der ausgewählte Routenstopp muss hellgrün erscheinen.
+2. Denselben Ort ein zweites Mal hinzufügen: Jeder Stopp dieses Ortes mit mindestens 1 Nacht muss kräftiger grün erscheinen.
+3. Einen der beiden Stopps auf 0 Nächte setzen: Dieser einzelne Stopp muss orange erscheinen; der andere bleibt grün.
+4. Den zweiten Stopp wieder auf mindestens 1 Nacht erhöhen: Beide Vorkommen müssen wieder grün erscheinen.
+5. Einen der beiden Stopps entfernen: Der verbleibende Stopp muss wieder hellgrün erscheinen.
 
 ## Fahrzeugbilder
 

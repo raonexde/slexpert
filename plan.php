@@ -209,6 +209,11 @@ $plannerData = [
             <aside class="planner-panel route-panel">
                 <div class="mobile-panel-head"><strong><?= e(t('Route zusammenstellen', 'Build your route')) ?></strong><button type="button" data-mobile-close aria-label="<?= e(t('Schließen', 'Close')) ?>">×</button></div>
                 <div class="panel-heading"><span><?= e(t('Ihre Route', 'Your route')) ?></span><b data-route-count>0</b></div>
+                <div class="route-status-legend" aria-label="<?= e(t('Farblegende der Route', 'Route colour legend')) ?>">
+                    <span><i class="status-selected-once"></i><?= e(t('1× gewählt', 'Selected once')) ?></span>
+                    <span><i class="status-repeat-destination"></i><?= e(t('2× oder mehr', 'Twice or more')) ?></span>
+                    <span><i class="status-zero-nights"></i><?= e(t('0 Nächte', '0 nights')) ?></span>
+                </div>
                 <label class="route-search"><span><?= e(t('Ort suchen', 'Search places')) ?></span><input type="search" data-destination-search placeholder="<?= e(t('z. B. Anuradhapura', 'e.g. Anuradhapura')) ?>"></label>
                 <div class="route-options" data-route-options></div>
                 <p class="route-order-help"><?= e(t('Mit den Pfeilen ändern Sie die Reihenfolge. Mit ＋ fügen Sie denselben Ort erneut hinzu, z. B. als Rückkehrstopp.', 'Use the arrows to change the order. Use ＋ to add the same place again, for example as a return stop.')) ?></p>

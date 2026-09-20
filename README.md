@@ -1,4 +1,4 @@
-# Sri Lanka Expert · Version 12.4.1
+# Sri Lanka Expert · Version 12.4.2
 
 Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/MariaDB 10.4+.
 
@@ -200,6 +200,13 @@ Version 12.3 added customer accounts, booking management and B2B agency manageme
 - Selected places now have a clearly labelled **Add again at route end** button.
 - Searching for a place already used in the route shows it again with an **Already selected · add again** message.
 - Repeated stops remain independent, so an arrival stay and a later departure stay can have different nights, hotels and services.
+
+### Version 12.4.2 route status colours
+
+- A destination selected once is highlighted in light green.
+- Every overnight occurrence of a destination used twice or more is highlighted in stronger green.
+- A route stop with 0 nights is highlighted in orange and takes priority over the repeat colour.
+- A bilingual colour legend is shown above the route search on desktop and mobile.
 
 Bookings have a unique `BK-...` reference, travel dates, total amount, agreed deposit, payment due date, status, paid amount and outstanding balance. Administrators record bank transfers, cards, PayPal, cash or other payments. The customer dashboard immediately reflects the updated balance and payment history.
 

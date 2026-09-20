@@ -299,6 +299,10 @@
     function renderRoutes() {
         var searchTerm = destinationSearch ? destinationSearch.value.trim().toLocaleLowerCase(lang === 'de' ? 'de-DE' : 'en-GB') : '';
         var selectedDestinationIds = new Set(routeStops.map(function (stop) { return stop.destination_id; }));
+        var destinationStopCounts = routeStops.reduce(function (counts, stop) {
+            counts[stop.destination_id] = (counts[stop.destination_id] || 0) + 1;
+            return counts;
+        }, {});
         var availableDestinations = data.destinations.filter(function (destination) {
             if (!searchTerm && selectedDestinationIds.has(destination.id)) return false;
             if (!searchTerm) return true;
@@ -308,8 +312,11 @@
         var selectedMarkup = routeStops.map(function (stop, position) {
             var destination = findDestination(stop.destination_id);
             if (!destination) return '';
+            var routeStatusClass = Number(stop.nights) === 0
+                ? ' is-zero-nights'
+                : (destinationStopCounts[stop.destination_id] > 1 ? ' is-repeat-destination' : ' is-selected-once');
             var controls = '<span class="route-move"><button type="button" data-move-up aria-label="' + esc(data.labels.moveUp) + '"' + (position === 0 ? ' disabled' : '') + '>↑</button><button type="button" data-move-down aria-label="' + esc(data.labels.moveDown) + '"' + (position === routeStops.length - 1 ? ' disabled' : '') + '>↓</button></span>';
-            return '<div class="route-choice selected-stop' + (activeStopUid === stop.uid ? ' active' : '') + '" data-stop-row="' + esc(stop.uid) + '">' +
+            return '<div class="route-choice selected-stop' + routeStatusClass + (activeStopUid === stop.uid ? ' active' : '') + '" data-stop-row="' + esc(stop.uid) + '">' +
                 '<button type="button" class="route-toggle" data-route-remove aria-label="' + esc(data.labels.removeStop) + '"><span class="route-number accent-' + esc(destination.accent) + '">' + (position + 1) + '</span></button>' +
                 '<button type="button" class="route-name" data-route-activate><strong>' + esc(text(destination, 'name')) + '</strong><small>' + esc(nightCountText(stop.nights)) + ' · ' + esc(data.labels.from) + ' ' + esc(formatter.format(destination.price)) + '</small></button>' +
                 controls + '<button type="button" class="route-open" data-route-activate>' + (activeStopUid === stop.uid ? '●' : '›') + '</button>' +
