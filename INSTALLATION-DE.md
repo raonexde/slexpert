@@ -30,13 +30,13 @@
 
 Die Datenbank, Tabellen und ersten Beispielinhalte werden automatisch erstellt.
 
-Version 12.4 verwendet **Sri Lanka Expert by Raonex GmbH** als Standardmarke. Firmenadresse, Telefon, E-Mail, Website und Social-Media-Links können danach unter **Admin → Einstellungen** bearbeitet werden. Nicht ausgefüllte Social-Media-Links werden im Footer nicht angezeigt.
+Version 12.4.1 verwendet **Sri Lanka Expert by Raonex GmbH** als Standardmarke. Firmenadresse, Telefon, E-Mail, Website und Social-Media-Links können danach unter **Admin → Einstellungen** bearbeitet werden. Nicht ausgefüllte Social-Media-Links werden im Footer nicht angezeigt.
 
-## Aktualisierung auf Version 12.4
+## Aktualisierung auf Version 12.4.1
 
 1. Datenbank sowie die Ordner `uploads` und `storage` sichern.
-2. Die Dateien aus Version 12.4 über die bisherigen Programmdateien kopieren. Vorhandene `config.local.php`, Uploads und gespeicherte Dokumente nicht löschen.
-3. Eine beliebige Seite öffnen. Die Migration `015_vehicle_guides_and_visuals.php` wird automatisch einmal ausgeführt.
+2. Die Dateien aus Version 12.4.1 über die bisherigen Programmdateien kopieren. Vorhandene `config.local.php`, Uploads und gespeicherte Dokumente nicht löschen.
+3. Eine beliebige Seite öffnen. Die Migrationen werden automatisch einmal ausgeführt. Version 12.4.1 setzt den Flughafen auf 0 Nächte und aktiviert die deutlichere Wiederholungsfunktion.
 4. Unter **Admin → Fahrzeugflotte** Fahrzeugbilder ergänzen.
 5. Unter **Admin → Reiseleiter** eingegangene Registrierungen prüfen. Ein Profil wird nur im Planer angezeigt, wenn der Status **Freigegeben** und die Checkbox **Aktiv** gesetzt sind.
 

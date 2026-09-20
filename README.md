@@ -1,4 +1,4 @@
-# Sri Lanka Expert · Version 12.4
+# Sri Lanka Expert · Version 12.4.1
 
 Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/MariaDB 10.4+.
 
@@ -192,6 +192,14 @@ Version 12.3 added customer accounts, booking management and B2B agency manageme
 - Only approved and active guides appear as an optional planner selection. Their daily rate is calculated for the tour/vehicle days and appears in the saved enquiry and printable itinerary.
 - Nine Maldives atolls and existing Maldives resorts receive original local starter visuals only when their image field is empty. Existing uploaded images are never replaced.
 - The packaged SVG visuals are design placeholders, not photographs of a named resort. Replace them with your own licensed partner photography before publication.
+
+### Version 12.4.1 route correction
+
+- Bandaranaike International Airport is included as an arrival/departure route point with **0 nights** by default.
+- Every route stop can be reduced to 0 nights.
+- Selected places now have a clearly labelled **Add again at route end** button.
+- Searching for a place already used in the route shows it again with an **Already selected · add again** message.
+- Repeated stops remain independent, so an arrival stay and a later departure stay can have different nights, hotels and services.
 
 Bookings have a unique `BK-...` reference, travel dates, total amount, agreed deposit, payment due date, status, paid amount and outstanding balance. Administrators record bank transfers, cards, PayPal, cash or other payments. The customer dashboard immediately reflects the updated balance and payment history.
 

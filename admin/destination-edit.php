@@ -37,7 +37,7 @@ if (request_is_post()) {
             trim((string)($_POST['name_de'] ?? '')), trim((string)($_POST['name_en'] ?? '')),
             trim((string)($_POST['region_de'] ?? '')), trim((string)($_POST['region_en'] ?? '')),
             trim((string)($_POST['intro_de'] ?? '')), trim((string)($_POST['intro_en'] ?? '')),
-            max(1,min(14,(int)($_POST['default_nights'] ?? 2))), max(0,(float)($_POST['price_from'] ?? 0)),
+            max(0,min(14,(int)($_POST['default_nights'] ?? 2))), max(0,(float)($_POST['price_from'] ?? 0)),
             in_array($_POST['accent'] ?? '', ['leaf','ochre','mist','clay','ocean','sand'], true) ? $_POST['accent'] : 'leaf',
             $image, $latitude, $longitude, substr(trim((string)($_POST['google_place_id'] ?? '')), 0, 255),
             (int)($_POST['sort_order'] ?? 0), isset($_POST['active']) ? 1 : 0,
@@ -85,7 +85,7 @@ require __DIR__ . '/_header.php';
             <label>Beschreibung Englisch<textarea name="intro_en" rows="5" required><?= e($destination['intro_en']) ?></textarea></label>
         </div></section>
         <section class="admin-card form-card"><div class="card-head"><div><h2>Planung & Darstellung</h2><p>Empfohlene Dauer, Einstiegspreis und Bild</p></div></div><div class="form-grid thirds">
-            <label>Empfohlene Nächte<input type="number" min="1" max="14" name="default_nights" value="<?= (int)$destination['default_nights'] ?>"></label>
+            <label>Empfohlene Nächte<input type="number" min="0" max="14" name="default_nights" value="<?= (int)$destination['default_nights'] ?>"><small>0 für Flughafen, Tagesstopp oder reine Durchfahrt</small></label>
             <label>Preis ab (€)<input type="number" min="0" step="0.01" name="price_from" value="<?= e($destination['price_from']) ?>"></label>
             <label>Sortierung<input type="number" name="sort_order" value="<?= (int)$destination['sort_order'] ?>"></label>
             <label>Farbwelt<select name="accent"><?php foreach (['leaf'=>'Grün','ochre'=>'Ocker','mist'=>'Salbei','clay'=>'Terracotta','ocean'=>'Ozean','sand'=>'Sand'] as $value=>$label): ?><option value="<?= e($value) ?>"<?= selected($value,$destination['accent']) ?>><?= e($label) ?></option><?php endforeach; ?></select></label>

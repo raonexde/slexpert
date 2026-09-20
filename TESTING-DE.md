@@ -1,10 +1,19 @@
-# Testanleitung Version 12.4
+# Testanleitung Version 12.4.1
 
 ## Bestehende lokale Installation aktualisieren
 
 1. MySQL/MariaDB muss in XAMPP grün laufen.
 2. Datenbank und den bisherigen Websiteordner sichern.
-3. Die Dateien aus Version 12.4 über die bisherigen Website-Dateien kopieren.
+3. Die Dateien aus Version 12.4.1 über die bisherigen Website-Dateien kopieren.
+
+## Flughafen und wiederholte Orte
+
+1. Bandaranaike International Airport zur Route hinzufügen. Der Stopp muss mit 0 Nächten beginnen.
+2. Negombo oder Colombo hinzufügen.
+3. Beim bereits gewählten Ort **Nochmals am Routenende** anklicken. Ein zweiter, unabhängiger Stopp muss erscheinen.
+4. Alternativ im Suchfeld nach dem bereits gewählten Ort suchen und **Bereits gewählt · nochmals hinzufügen** anklicken.
+5. Für den ersten oder letzten Stopp 0 Nächte wählen und die Anfrage absenden.
+6. Prüfen, dass beide Vorkommen in Google Maps, Zusammenfassung, gespeicherter Anfrage und Druckansicht in der richtigen Reihenfolge erscheinen.
 
 ## Fahrzeugbilder
 

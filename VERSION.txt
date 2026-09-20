@@ -1,4 +1,4 @@
-12.4.0
+12.4.1
 
 Customer, booking and B2B agent management:
 - customer self-registration, secure login, profile and travel dashboard

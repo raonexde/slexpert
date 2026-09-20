@@ -300,7 +300,7 @@
         var searchTerm = destinationSearch ? destinationSearch.value.trim().toLocaleLowerCase(lang === 'de' ? 'de-DE' : 'en-GB') : '';
         var selectedDestinationIds = new Set(routeStops.map(function (stop) { return stop.destination_id; }));
         var availableDestinations = data.destinations.filter(function (destination) {
-            if (selectedDestinationIds.has(destination.id)) return false;
+            if (!searchTerm && selectedDestinationIds.has(destination.id)) return false;
             if (!searchTerm) return true;
             var haystack = [destination.code,text(destination,'name'),text(destination,'region')].join(' ').toLocaleLowerCase(lang === 'de' ? 'de-DE' : 'en-GB');
             return haystack.indexOf(searchTerm) !== -1;
@@ -308,16 +308,18 @@
         var selectedMarkup = routeStops.map(function (stop, position) {
             var destination = findDestination(stop.destination_id);
             if (!destination) return '';
-            var controls = '<span class="route-move"><button type="button" data-move-up aria-label="' + esc(data.labels.moveUp) + '"' + (position === 0 ? ' disabled' : '') + '>↑</button><button type="button" data-move-down aria-label="' + esc(data.labels.moveDown) + '"' + (position === routeStops.length - 1 ? ' disabled' : '') + '>↓</button><button type="button" data-add-again aria-label="' + esc(data.labels.addAgain) + '" title="' + esc(data.labels.addAgain) + '">＋</button></span>';
-            return '<div class="route-choice' + (activeStopUid === stop.uid ? ' active' : '') + '" data-stop-row="' + esc(stop.uid) + '">' +
+            var controls = '<span class="route-move"><button type="button" data-move-up aria-label="' + esc(data.labels.moveUp) + '"' + (position === 0 ? ' disabled' : '') + '>↑</button><button type="button" data-move-down aria-label="' + esc(data.labels.moveDown) + '"' + (position === routeStops.length - 1 ? ' disabled' : '') + '>↓</button></span>';
+            return '<div class="route-choice selected-stop' + (activeStopUid === stop.uid ? ' active' : '') + '" data-stop-row="' + esc(stop.uid) + '">' +
                 '<button type="button" class="route-toggle" data-route-remove aria-label="' + esc(data.labels.removeStop) + '"><span class="route-number accent-' + esc(destination.accent) + '">' + (position + 1) + '</span></button>' +
                 '<button type="button" class="route-name" data-route-activate><strong>' + esc(text(destination, 'name')) + '</strong><small>' + esc(nightCountText(stop.nights)) + ' · ' + esc(data.labels.from) + ' ' + esc(formatter.format(destination.price)) + '</small></button>' +
-                controls + '<button type="button" class="route-open" data-route-activate>' + (activeStopUid === stop.uid ? '●' : '›') + '</button></div>';
+                controls + '<button type="button" class="route-open" data-route-activate>' + (activeStopUid === stop.uid ? '●' : '›') + '</button>' +
+                '<button type="button" class="route-repeat" data-add-again>＋ ' + esc(data.labels.addAgainShort) + '</button></div>';
         }).join('');
         var availableMarkup = availableDestinations.map(function (destination) {
+            var isRepeat = selectedDestinationIds.has(destination.id);
             return '<div class="route-choice" data-destination-row="' + destination.id + '">' +
                 '<button type="button" class="route-toggle" data-route-add aria-label="' + esc(data.labels.addStop) + '"><span class="route-number accent-' + esc(destination.accent) + '">+</span></button>' +
-                '<button type="button" class="route-name" data-route-add><strong>' + esc(text(destination, 'name')) + '</strong><small>' + esc(nightCountText(destination.nights)) + ' · ' + esc(data.labels.from) + ' ' + esc(formatter.format(destination.price)) + '</small></button>' +
+                '<button type="button" class="route-name" data-route-add><strong>' + esc(text(destination, 'name')) + '</strong><small>' + (isRepeat ? esc(data.labels.alreadySelectedAddAgain) : esc(nightCountText(destination.nights)) + ' · ' + esc(data.labels.from) + ' ' + esc(formatter.format(destination.price))) + '</small></button>' +
                 '<span class="route-move"></span><button type="button" class="route-open" data-route-add>›</button></div>';
         }).join('');
         routeOptions.innerHTML = selectedMarkup + availableMarkup;
