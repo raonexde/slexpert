@@ -1,10 +1,10 @@
-# Testanleitung Version 12.5
+# Testanleitung Version 12.5.2
 
 ## Bestehende lokale Installation aktualisieren
 
 1. MySQL/MariaDB muss in XAMPP grün laufen.
 2. Datenbank und den bisherigen Websiteordner sichern.
-3. Die Dateien aus Version 12.5 über die bisherigen Website-Dateien kopieren.
+3. Die Dateien aus Version 12.5.2 über die bisherigen Website-Dateien kopieren.
 
 ## Katalogtypen und Klassifizierungen
 
@@ -23,6 +23,10 @@
 4. Google-Karte über **Karte anzeigen** öffnen und wieder schließen.
 5. Eine gespeicherte Druckansicht auf dem Smartphone öffnen. Reisedaten müssen zweispaltig und Routenstopps einspaltig in den Bildschirm passen.
 6. Strand-, Ayurveda- und Malediven-Planer öffnen. Hotel- und Leistungs-Karten müssen einspaltig und mit größerer Schrift erscheinen.
+7. **Reiseideen** auf einem Smartphone öffnen. Kategorien, Bildbeschriftung, Beschreibung, Orts-Chips, Nächte, Preis und Schaltfläche müssen ohne Zoomen gut lesbar sein.
+8. Eine Reiseidee öffnen. Einleitung, Reisedaten, Tagesetappen, Leistungen, Preise und Anpassungs-Schaltfläche müssen mindestens in normaler Smartphone-Leseschrift erscheinen.
+9. Die Seite danach ohne manuelles Löschen des Browser-Caches neu laden. Die CSS-Adresse muss einen `?v=`-Wert enthalten und die neue Schriftgröße sofort erscheinen.
+10. Reiseideen am Desktop prüfen: Beschreibung, Orts-Chips, Nächte, Preise und Aktionsschaltflächen müssen deutlich größer als in Version 12.5.1 sein.
 
 ## Flughafen und wiederholte Orte
 

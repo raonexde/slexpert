@@ -1,4 +1,4 @@
-# Sri Lanka Expert · Version 12.5
+# Sri Lanka Expert · Version 12.5.2
 
 Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/MariaDB 10.4+.
 
@@ -8,6 +8,9 @@ Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/
 - Responsive public website
 - Mobile planner with larger text, one-column cards, touch-friendly controls and a collapsible route map
 - Mobile itinerary and proposal views that fit the screen without horizontal scrolling
+- Ready-made tour catalogue and tour-detail pages with larger phone typography and touch-friendly filters
+- Readable ready-made tour typography on desktop and tablet, with modern card buttons and route chips
+- Automatic asset cache-busting so updated CSS and JavaScript are loaded after deployment
 - Rebranded public and admin interface for Sri Lanka Expert by Raonex GmbH
 - Mobile-first three-step tour planner with a full-screen searchable destination selector
 - Homepage destination explorer with featured places, search and experience filters

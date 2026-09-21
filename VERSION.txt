@@ -1,4 +1,4 @@
-12.5
+12.5.2
 
 Catalogue classifications and mobile usability:
 - editable accommodation classifications covering hotels, resorts, villas, Ayurveda, eco/wildlife stays, guest houses, homestays, apartments, hostels and camping
@@ -10,6 +10,11 @@ Catalogue classifications and mobile usability:
 - larger mobile text, one-column selection cards and touch-friendly controls
 - collapsible route map on phones and a screen-fitting mobile itinerary
 - all existing Version 12.4.2 route, fleet, guide, customer, booking and B2B features preserved
+- ready-made tour catalogue and detail pages now use larger mobile typography throughout
+- mobile category tabs, route chips, price rows and calls to action use touch-friendly sizing
+- ready-made tour cards now use readable desktop, tablet and mobile typography
+- mobile public pages use larger navigation, descriptions, cards, metadata and buttons
+- CSS and JavaScript URLs now include automatic file-version cache busting after updates
 
 Customer, booking and B2B agent management:
 - customer self-registration, secure login, profile and travel dashboard

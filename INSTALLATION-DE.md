@@ -30,15 +30,17 @@
 
 Die Datenbank, Tabellen und ersten Beispielinhalte werden automatisch erstellt.
 
-Version 12.5 verwendet **Sri Lanka Expert by Raonex GmbH** als Standardmarke. Firmenadresse, Telefon, E-Mail, Website und Social-Media-Links können danach unter **Admin → Einstellungen** bearbeitet werden. Nicht ausgefüllte Social-Media-Links werden im Footer nicht angezeigt.
+Version 12.5.2 verwendet **Sri Lanka Expert by Raonex GmbH** als Standardmarke. Firmenadresse, Telefon, E-Mail, Website und Social-Media-Links können danach unter **Admin → Einstellungen** bearbeitet werden. Nicht ausgefüllte Social-Media-Links werden im Footer nicht angezeigt.
 
-## Aktualisierung auf Version 12.5
+## Aktualisierung auf Version 12.5.2
 
 1. Datenbank sowie die Ordner `uploads` und `storage` sichern.
-2. Die Dateien aus Version 12.5 über die bisherigen Programmdateien kopieren. Vorhandene `config.local.php`, Uploads und gespeicherte Dokumente nicht löschen.
+2. Die Dateien aus Version 12.5.2 über die bisherigen Programmdateien kopieren. Vorhandene `config.local.php`, Uploads und gespeicherte Dokumente nicht löschen.
 3. Eine beliebige Seite öffnen. Die Migration `017_catalog_classifications_and_mobile.php` wird automatisch einmal ausgeführt. Sie ergänzt Klassifizierungen und neue Katalogfelder, ohne vorhandene Reisebausteine oder Preise zu ersetzen.
 4. Unter **Admin → Fahrzeugflotte** Fahrzeugbilder ergänzen.
 5. Unter **Admin → Reiseleiter** eingegangene Registrierungen prüfen. Ein Profil wird nur im Planer angezeigt, wenn der Status **Freigegeben** und die Checkbox **Aktiv** gesetzt sind.
+
+Version 12.5.2 hängt automatisch den Änderungszeitpunkt an lokale CSS- und JavaScript-Dateien an. Dadurch lädt der Browser nach einem Update die neue Gestaltung und verwendet nicht weiterhin eine alte, zwischengespeicherte Datei.
 
 Unter **Admin → Kategorien** können Unterkunftsarten und Unterkategorien für Sehenswürdigkeiten, Aktivitätszentren, Restaurants, Gewürzgärten, Shops und Zusatzleistungen jederzeit ergänzt, übersetzt, sortiert oder deaktiviert werden. Unter **Admin → Reisebausteine** besitzt jedes Angebot zusätzlich Klassifizierung, Sterne, Verkaufssegment, Ausstattung, Öffnungszeiten, Reservierungspflicht und interne Lieferantenfelder.
 

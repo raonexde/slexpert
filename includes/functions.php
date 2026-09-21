@@ -49,7 +49,14 @@ function url(string $path = ''): string
 
 function asset(string $path): string
 {
-    return url('assets/' . ltrim($path, '/'));
+    $relativePath = ltrim($path, '/');
+    $assetUrl = url('assets/' . $relativePath);
+    $localPath = dirname(__DIR__) . '/assets/' . $relativePath;
+    if (is_file($localPath)) {
+        $modified = filemtime($localPath);
+        if ($modified !== false) return $assetUrl . '?v=' . $modified;
+    }
+    return $assetUrl;
 }
 
 function e(mixed $value): string
