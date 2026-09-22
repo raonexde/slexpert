@@ -1,4 +1,11 @@
-12.8.1
+12.8.3
+
+- expanded Hotel Management search across names, destination, region, country, category, market segment, supplier, registration number, stars, ID and creation date
+- multi-word hotel searches now require every entered word to match the combined searchable hotel data
+- country and status filters continue to work together with search, with a one-click reset control
+
+- Hotel Management now lists the most recently created hotel first
+- creation date is the primary order and database ID provides a stable newest-first fallback
 
 - fixed new-hotel creation: the automatic Double room now supplies all 19 required database values
 - fixed failed-create handling so a rolled-back temporary auto-increment ID is never opened as an existing hotel

@@ -1,10 +1,10 @@
-# Testanleitung Version 12.8.1
+# Testanleitung Version 12.8.3
 
 ## Bestehende lokale Installation aktualisieren
 
 1. MySQL/MariaDB muss in XAMPP grün laufen.
 2. Datenbank und den bisherigen Websiteordner sichern.
-3. Die Dateien aus Version 12.8.1 über die bisherigen Website-Dateien kopieren.
+3. Die Dateien aus Version 12.8.3 über die bisherigen Website-Dateien kopieren.
 
 ## Benutzer- und Rechteverwaltung
 
@@ -23,15 +23,19 @@
 
 1. **Admin → Hotelverwaltung** öffnen. Alle bisherigen Unterkünfte müssen dort erscheinen.
 2. Ein neues Hotel anlegen und speichern. Es muss ohne „Item not found“ in der Hotelliste erscheinen.
-3. Das neue Hotel öffnen und **Zimmer & Leistungen** wählen. Eine aktive Zimmerkategorie „Doppelzimmer / Double room“ muss automatisch vorhanden sein.
-4. Eine weitere Zimmerkategorie mit deutschem/englischem Namen, Bild, Belegung, Basispreis und Bestand anlegen.
-5. Einen Saisonpreis mit Von-/Bis-Datum, Mindestnächten und abweichendem Zimmerpreis speichern.
-6. Mindestens eine Sehenswürdigkeit, Aktivität oder Zusatzleistung dem Hotel zuordnen.
-7. Im Rundreiseplaner das Hotel wählen. Zimmerkategorie, Zimmerzahl und Verpflegung müssen einzeln wählbar sein.
-8. Ein Startdatum innerhalb des Saisonzeitraums wählen. Die Schätzung muss den Saisonpreis pro Zimmer und Nacht verwenden.
-9. Strand-, Ayurveda- oder Malediven-Planer öffnen. Zimmerkategorie wählen und prüfen, dass nur die zugeordneten Leistungen angeboten werden; ohne Zuordnung bleiben alle Leistungen des Ortes verfügbar.
-10. Anfrage absenden. Zimmerkategorie, Preis, Verpflegung und Leistungen müssen im Admin und in der Druckansicht erscheinen.
-11. Ein unbenutztes Testhotel löschen. Ein bereits in einer Anfrage verwendetes Hotel darf dagegen nur archiviert werden.
+3. Das gerade angelegte Hotel muss als erster Eintrag oben in der Hotelliste stehen.
+4. Das Hotel nacheinander über seinen Namen, englischen Namen, Ort, Region, Kategorie und seine ID suchen. Jeder passende Suchbegriff muss den Eintrag finden.
+5. Eine Mehrwortsuche wie „Sigiriya Boutique“ testen und zusätzlich Land oder Status auswählen. Alle Filter müssen gemeinsam wirken.
+6. **Zurücksetzen** anklicken. Suchtext, Land und Status müssen entfernt und alle Hotels wieder angezeigt werden.
+7. Das neue Hotel öffnen und **Zimmer & Leistungen** wählen. Eine aktive Zimmerkategorie „Doppelzimmer / Double room“ muss automatisch vorhanden sein.
+8. Eine weitere Zimmerkategorie mit deutschem/englischem Namen, Bild, Belegung, Basispreis und Bestand anlegen.
+9. Einen Saisonpreis mit Von-/Bis-Datum, Mindestnächten und abweichendem Zimmerpreis speichern.
+10. Mindestens eine Sehenswürdigkeit, Aktivität oder Zusatzleistung dem Hotel zuordnen.
+11. Im Rundreiseplaner das Hotel wählen. Zimmerkategorie, Zimmerzahl und Verpflegung müssen einzeln wählbar sein.
+12. Ein Startdatum innerhalb des Saisonzeitraums wählen. Die Schätzung muss den Saisonpreis pro Zimmer und Nacht verwenden.
+13. Strand-, Ayurveda- oder Malediven-Planer öffnen. Zimmerkategorie wählen und prüfen, dass nur die zugeordneten Leistungen angeboten werden; ohne Zuordnung bleiben alle Leistungen des Ortes verfügbar.
+14. Anfrage absenden. Zimmerkategorie, Preis, Verpflegung und Leistungen müssen im Admin und in der Druckansicht erscheinen.
+15. Ein unbenutztes Testhotel löschen. Ein bereits in einer Anfrage verwendetes Hotel darf dagegen nur archiviert werden.
 
 ## Katalogtypen und Klassifizierungen
 

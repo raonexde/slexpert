@@ -32,12 +32,23 @@ if (request_is_post()) {
     redirect('admin/hotels.php');
 }
 
-$search = trim((string)($_GET['q'] ?? ''));
+$search = substr(trim((string)($_GET['q'] ?? '')),0,120);
 $country = in_array($_GET['country'] ?? '', ['LK','MV'], true) ? $_GET['country'] : '';
 $status = in_array($_GET['status'] ?? '', ['active','archived'], true) ? $_GET['status'] : '';
 $where = ["c.type='accommodation'"];
 $params = [];
-if ($search !== '') { $where[] = '(c.name_de LIKE ? OR c.name_en LIKE ? OR d.name_de LIKE ? OR d.name_en LIKE ?)'; $like='%'.$search.'%'; array_push($params,$like,$like,$like,$like); }
+if ($search !== '') {
+    $searchTerms=array_slice(preg_split('/\s+/u',$search,-1,PREG_SPLIT_NO_EMPTY)?:[],0,8);
+    $searchIndex="CONCAT_WS(' ',
+        CAST(c.id AS CHAR),c.name_de,c.name_en,d.name_de,d.name_en,d.region_de,d.region_en,d.country_code,
+        CASE d.country_code WHEN 'LK' THEN 'Sri Lanka' WHEN 'MV' THEN 'Malediven Maldives' ELSE '' END,
+        COALESCE(cc.name_de,''),COALESCE(cc.name_en,''),REPLACE(c.market_segment,'_',' '),
+        c.supplier_name,c.sltda_registration_number,CAST(c.star_rating AS CHAR),
+        CASE WHEN c.star_rating>0 THEN CONCAT(c.star_rating,' Sterne star') ELSE '' END,
+        DATE_FORMAT(c.created_at,'%d.%m.%Y'),DATE_FORMAT(c.created_at,'%Y-%m-%d')
+    )";
+    foreach($searchTerms as $term){$where[]="$searchIndex LIKE ?";$params[]='%'.strtr($term,['\\'=>'\\\\','%'=>'\\%','_'=>'\\_']).'%';}
+}
 if ($country !== '') { $where[] = 'd.country_code=?'; $params[]=$country; }
 if ($status !== '') $where[] = 'c.active=' . ($status === 'active' ? '1' : '0');
 $sql = "SELECT c.*,d.name_de AS destination_name,d.country_code,cc.name_de AS classification_name,
@@ -47,14 +58,14 @@ $sql = "SELECT c.*,d.name_de AS destination_name,d.country_code,cc.name_de AS cl
     LEFT JOIN catalog_classifications cc ON cc.id=c.classification_id
     LEFT JOIN hotel_room_types r ON r.hotel_id=c.id
     WHERE ".implode(' AND ',$where)."
-    GROUP BY c.id ORDER BY d.country_code,d.sort_order,c.sort_order,c.name_de";
+    GROUP BY c.id ORDER BY c.created_at DESC,c.id DESC";
 $stmt=db()->prepare($sql);$stmt->execute($params);$hotels=$stmt->fetchAll();
 
 $adminPage='hotels';$adminTitle='Hotelverwaltung';require __DIR__.'/_header.php';
 ?>
 <div class="admin-content">
     <div class="page-heading compact"><div><p>UNTERKÜNFTE</p><h1>Hotelverwaltung</h1><span>Hotels, Resorts, Zimmerkategorien, Saisonpreise, Verpflegung und zugehörige Leistungen zentral verwalten.</span></div><a class="primary-button" href="item-edit.php?hotel=1">＋ Neues Hotel</a></div>
-    <form class="table-toolbar hotel-filter" method="get"><input name="q" value="<?= e($search) ?>" placeholder="Hotel oder Reiseziel suchen"><select name="country"><option value="">Alle Länder</option><option value="LK"<?= selected('LK',$country) ?>>Sri Lanka</option><option value="MV"<?= selected('MV',$country) ?>>Malediven</option></select><select name="status"><option value="">Alle Status</option><option value="active"<?= selected('active',$status) ?>>Aktiv</option><option value="archived"<?= selected('archived',$status) ?>>Archiviert</option></select><button type="submit">Filtern</button><span><?= count($hotels) ?> Hotels</span></form>
+    <form class="table-toolbar hotel-filter" method="get"><input name="q" value="<?= e($search) ?>" placeholder="Name, Ort, Region, Kategorie, Lieferant oder ID …"><select name="country"><option value="">Alle Länder</option><option value="LK"<?= selected('LK',$country) ?>>Sri Lanka</option><option value="MV"<?= selected('MV',$country) ?>>Malediven</option></select><select name="status"><option value="">Alle Status</option><option value="active"<?= selected('active',$status) ?>>Aktiv</option><option value="archived"<?= selected('archived',$status) ?>>Archiviert</option></select><button type="submit">Suchen</button><?php if($search!==''||$country!==''||$status!==''):?><a class="filter-reset" href="hotels.php">Zurücksetzen</a><?php endif;?><span><?= count($hotels) ?> Hotels gefunden</span></form>
     <section class="admin-card"><div class="admin-table-wrap"><table class="admin-table hotel-admin-table"><thead><tr><th>Bild</th><th>Hotel</th><th>Ort & Kategorie</th><th>Zimmer</th><th>Preis ab</th><th>Status</th><th>Aktionen</th></tr></thead><tbody>
     <?php foreach($hotels as $hotel):?><tr>
         <td><?php if($hotel['image_path']):?><img class="admin-table-thumb" src="<?= e(url($hotel['image_path'])) ?>" alt=""><?php else:?><span class="admin-table-placeholder">⌂</span><?php endif;?></td>
