@@ -1,4 +1,12 @@
-12.5.2
+12.7
+
+- dedicated Hotel Management section with search, country/status filters, editing, activation, safe archiving and deletion
+- bilingual room categories with room images, occupancy, inventory, base prices and seasonal date-based rates
+- existing hotel prices migrate automatically into an editable Double room category
+- hotel-specific related sights, activities, restaurants, spice gardens, shops and additional services
+- selectable room categories in tailor-made tours, Beach, Ayurveda and Maldives planners
+- selected room category and rate are stored as booking snapshots and shown in admin and print views
+- referenced hotels and room categories are archived instead of being destructively deleted
 
 Catalogue classifications and mobile usability:
 - editable accommodation classifications covering hotels, resorts, villas, Ayurveda, eco/wildlife stays, guest houses, homestays, apartments, hostels and camping

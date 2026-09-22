@@ -13,6 +13,7 @@ $email = strtolower(trim((string)($_POST['customer_email'] ?? '')));
 $phone = substr(trim((string)($_POST['customer_phone'] ?? '')), 0, 80);
 $notes = substr(trim((string)($_POST['notes'] ?? '')), 0, 4000);
 $hotelId = max(0, (int)($_POST['hotel_id'] ?? 0));
+$roomTypeId = max(0, (int)($_POST['room_type_id'] ?? 0));
 $adults = max(1, min(50, (int)($_POST['adults'] ?? 2)));
 $children = max(0, min(20, (int)($_POST['children'] ?? 0)));
 $rooms = max(1, min(20, (int)($_POST['rooms'] ?? 1)));
@@ -52,6 +53,14 @@ if (!$hotel) {
     flash('error',t('Das ausgewählte Hotel ist nicht verfügbar.','The selected hotel is not available.'));
     redirect($returnUrl);
 }
+$roomTypeStmt=db()->prepare('SELECT * FROM hotel_room_types WHERE hotel_id=? AND active=1 AND (?=0 OR id=?) ORDER BY featured DESC,sort_order,id LIMIT 1');
+$roomTypeStmt->execute([$hotelId,$roomTypeId,$roomTypeId]);$roomType=$roomTypeStmt->fetch()?:null;
+if(!$roomType&&$roomTypeId>0){flash('error',t('Die ausgewählte Zimmerkategorie ist nicht verfügbar.','The selected room category is not available.'));redirect($returnUrl);}
+if($roomType){
+    $roomRate=(float)$roomType['base_rate_per_room_night'];
+    if($startDate){$rateStmt=db()->prepare('SELECT price_per_room_night FROM hotel_room_rates WHERE room_type_id=? AND active=1 AND minimum_nights<=? AND (valid_from IS NULL OR valid_from<=?) AND (valid_to IS NULL OR valid_to>=?) ORDER BY valid_from DESC,sort_order,id LIMIT 1');$rateStmt->execute([(int)$roomType['id'],$nights,$startDate,$startDate]);$seasonal=$rateStmt->fetchColumn();if($seasonal!==false)$roomRate=(float)$seasonal;}
+    $hotel['price_per_person']=$roomRate;$hotel['standard_room_guests']=(int)$roomType['standard_guests'];$hotel['max_guests_with_extra_bed']=(int)$roomType['max_guests'];$hotel['extra_bed_percent']=(float)$roomType['extra_bed_percent'];$hotel['child_percent']=(float)$roomType['child_percent'];
+}
 
 if ($requestType === 'ayurveda') {
     $allowedNights = array_values(array_filter(array_map('intval',explode(',',(string)$hotel['ayurveda_night_options'])),static fn(int $night):bool=>$night>0&&$night<=90));
@@ -82,11 +91,13 @@ if ($serviceIds) {
     $serviceStmt = db()->prepare(
         "SELECT * FROM catalog_items
          WHERE id IN ($placeholders) AND destination_id=? AND type IN ('sight','activity','restaurant','spice_garden','shop','service')
-           AND active=1 AND $availabilityColumn=1"
+           AND active=1 AND ($availabilityColumn=1 OR EXISTS (SELECT 1 FROM hotel_related_items hri WHERE hri.catalog_item_id=catalog_items.id AND hri.hotel_id=?))"
     );
-    $serviceStmt->execute(array_merge($serviceIds,[(int)$hotel['destination_id']]));
+    $serviceStmt->execute(array_merge($serviceIds,[(int)$hotel['destination_id'],$hotelId]));
     $validById = [];
     foreach ($serviceStmt->fetchAll() as $service) $validById[(int)$service['id']] = $service;
+    $relatedStmt=db()->prepare('SELECT catalog_item_id FROM hotel_related_items WHERE hotel_id=?');$relatedStmt->execute([$hotelId]);$relatedIds=array_map('intval',$relatedStmt->fetchAll(PDO::FETCH_COLUMN));$relatedLookup=array_flip($relatedIds);
+    if($relatedIds)$validById=array_filter($validById,static fn(array $service):bool=>isset($relatedLookup[(int)$service['id']]));
     foreach ($serviceIds as $serviceId) if (isset($validById[$serviceId])) $services[] = $validById[$serviceId];
 }
 
@@ -133,18 +144,18 @@ try {
 
     $itemInsert = $pdo->prepare(
         'INSERT INTO tour_request_items
-         (request_id,request_destination_id,item_id,quantity,room_count,unit_price,price_basis,line_total,adult_quantity,child_quantity,extra_bed_adults,extra_bed_children,extra_bed_percent,child_percent,meal_plan_code,meal_plan_name_de,meal_plan_name_en,meal_plan_supplement)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+         (request_id,request_destination_id,item_id,quantity,room_count,room_type_id,room_type_code,room_type_name_de,room_type_name_en,unit_price,price_basis,line_total,adult_quantity,child_quantity,extra_bed_adults,extra_bed_children,extra_bed_percent,child_percent,meal_plan_code,meal_plan_name_de,meal_plan_name_en,meal_plan_supplement)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
     );
     $itemInsert->execute([
-        $requestId,$requestDestinationId,$hotelId,$adults+$children,$rooms,$pricedHotel['price_per_person'],'per_room_night',
+        $requestId,$requestDestinationId,$hotelId,$adults+$children,$rooms,$roomType?(int)$roomType['id']:null,$roomType['code']??'',$roomType['name_de']??'',$roomType['name_en']??'',$pricedHotel['price_per_person'],'per_room_night',
         $pricing['room_cost']+$pricing['extra_bed_cost']+$pricing['meal_cost'],$adults,$children,
         $pricing['extra_bed_adults'],$pricing['extra_bed_children'],$hotel['extra_bed_percent'],$hotel['child_percent'],
         $pricedMealPlan['code']??'',$pricedMealPlan['name_de']??'',$pricedMealPlan['name_en']??'',$pricedMealPlan['supplement_per_person_night']??0,
     ]);
     foreach ($pricing['services'] as $service) {
         $itemInsert->execute([
-            $requestId,$requestDestinationId,(int)$service['id'],$adults+$children,0,$service['price_per_person'],$service['price_basis'],
+            $requestId,$requestDestinationId,(int)$service['id'],$adults+$children,0,null,'','','',$service['price_per_person'],$service['price_basis'],
             $service['line_total'],$adults,$children,0,0,0,$hotel['child_percent'],'','','',0,
         ]);
     }

@@ -112,7 +112,7 @@ $mapData = [
                     <b><?= e($typeLabels[$item['type']]??$item['type']) ?>:</b> <?= e(lang()==='en'?$item['name_en']:$item['name_de']) ?>
                     <?php $classification=lang()==='en'?$item['classification_en']:$item['classification_de']; if($classification): ?> <em>· <?= e($classification) ?><?= (int)$item['star_rating']>0?' · '.str_repeat('★',(int)$item['star_rating']):'' ?></em><?php endif; ?>
                     <?php $meta=lang()==='en'?$item['meta_en']:$item['meta_de']; if($meta): ?> <em>· <?= e($meta) ?></em><?php endif; ?>
-                    <?php if($item['type']==='accommodation'): ?> <em>· <?= (int)$item['room_count'] ?> <?= e((int)$item['room_count']===1?t('Doppelzimmer','double room'):t('Doppelzimmer','double rooms')) ?> · <?= e(money($item['unit_price'])) ?> / <?= e(t('Zimmer / Nacht','room / night')) ?></em>
+                    <?php if($item['type']==='accommodation'): $roomTypeName=lang()==='en'?$item['room_type_name_en']:$item['room_type_name_de']; ?> <em>· <?= (int)$item['room_count'] ?> <?= e(t('Zimmer','room(s)')) ?><?= $roomTypeName?' · '.e($roomTypeName):'' ?> · <?= e(money($item['unit_price'])) ?> / <?= e(t('Zimmer / Nacht','room / night')) ?></em>
                     <?php elseif($item['price_basis']==='on_request'): ?> <em>· <?= e(t('Preis auf Anfrage','Price on request')) ?></em>
                     <?php elseif($item['price_basis']==='free'): ?> <em>· <?= e(t('Kostenfrei','Free')) ?></em>
                     <?php elseif((float)$item['unit_price']>0): ?> <em>· <?= e(money($item['unit_price'])) ?> / <?= e(stay_price_basis_label($item['price_basis'])) ?></em>

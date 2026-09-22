@@ -1,10 +1,23 @@
-# Testanleitung Version 12.5.2
+# Testanleitung Version 12.7
 
 ## Bestehende lokale Installation aktualisieren
 
 1. MySQL/MariaDB muss in XAMPP grün laufen.
 2. Datenbank und den bisherigen Websiteordner sichern.
-3. Die Dateien aus Version 12.5.2 über die bisherigen Website-Dateien kopieren.
+3. Die Dateien aus Version 12.7 über die bisherigen Website-Dateien kopieren.
+
+## Hotelverwaltung und Zimmerkategorien
+
+1. **Admin → Hotelverwaltung** öffnen. Alle bisherigen Unterkünfte müssen dort erscheinen.
+2. Ein neues Hotel anlegen, speichern und anschließend **Zimmer & Leistungen** öffnen.
+3. Eine Zimmerkategorie mit deutschem/englischem Namen, Bild, Belegung, Basispreis und Bestand anlegen.
+4. Einen Saisonpreis mit Von-/Bis-Datum, Mindestnächten und abweichendem Zimmerpreis speichern.
+5. Mindestens eine Sehenswürdigkeit, Aktivität oder Zusatzleistung dem Hotel zuordnen.
+6. Im Rundreiseplaner das Hotel wählen. Zimmerkategorie, Zimmerzahl und Verpflegung müssen einzeln wählbar sein.
+7. Ein Startdatum innerhalb des Saisonzeitraums wählen. Die Schätzung muss den Saisonpreis pro Zimmer und Nacht verwenden.
+8. Strand-, Ayurveda- oder Malediven-Planer öffnen. Zimmerkategorie wählen und prüfen, dass nur die zugeordneten Leistungen angeboten werden; ohne Zuordnung bleiben alle Leistungen des Ortes verfügbar.
+9. Anfrage absenden. Zimmerkategorie, Preis, Verpflegung und Leistungen müssen im Admin und in der Druckansicht erscheinen.
+10. Ein unbenutztes Testhotel löschen. Ein bereits in einer Anfrage verwendetes Hotel darf dagegen nur archiviert werden.
 
 ## Katalogtypen und Klassifizierungen
 
@@ -27,6 +40,9 @@
 8. Eine Reiseidee öffnen. Einleitung, Reisedaten, Tagesetappen, Leistungen, Preise und Anpassungs-Schaltfläche müssen mindestens in normaler Smartphone-Leseschrift erscheinen.
 9. Die Seite danach ohne manuelles Löschen des Browser-Caches neu laden. Die CSS-Adresse muss einen `?v=`-Wert enthalten und die neue Schriftgröße sofort erscheinen.
 10. Reiseideen am Desktop prüfen: Beschreibung, Orts-Chips, Nächte, Preise und Aktionsschaltflächen müssen deutlich größer als in Version 12.5.1 sein.
+11. Unter **Reiseideen → Sport & Abenteuer** die neue Knuckles-Wanderreise öffnen. Distanz, Auf-/Abstieg, Höhenlage, Bewegungszeit, Gesamtzeit, Start/Ziel, Führerhinweis und Wikiloc-Referenz müssen sichtbar sein.
+12. Die Reise drucken bzw. als PDF öffnen. Das Wanderprofil und die ausgewählte Aktivität müssen enthalten sein.
+13. Unter **Admin → Fertige Reisen** die Knuckles-Wanderreise bearbeiten, einen Wert ändern und speichern. Die öffentliche Detailseite muss den geänderten Wert anzeigen.
 
 ## Flughafen und wiederholte Orte
 

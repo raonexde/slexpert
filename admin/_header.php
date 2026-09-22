@@ -26,6 +26,7 @@ $user = admin_user();
             <a class="<?= $adminPage === 'customers' ? 'active' : '' ?>" href="<?= e(url('admin/customers.php')) ?>"><span>◉</span>Kundenkonten</a>
             <a class="<?= $adminPage === 'agents' ? 'active' : '' ?>" href="<?= e(url('admin/agents.php')) ?>"><span>◎</span>B2B-Agenturen</a>
             <a class="<?= $adminPage === 'tours' ? 'active' : '' ?>" href="<?= e(url('admin/tours.php')) ?>"><span>◈</span>Fertige Reisen</a>
+            <a class="<?= $adminPage === 'hotels' ? 'active' : '' ?>" href="<?= e(url('admin/hotels.php')) ?>"><span>⌂</span>Hotelverwaltung</a>
             <a class="<?= $adminPage === 'catalog' ? 'active' : '' ?>" href="<?= e(url('admin/catalog.php')) ?>"><span>▦</span>Reisebausteine</a>
             <a class="<?= $adminPage === 'classifications' ? 'active' : '' ?>" href="<?= e(url('admin/classifications.php')) ?>"><span>≡</span>Kategorien</a>
             <a class="<?= $adminPage === 'vehicles' ? 'active' : '' ?>" href="<?= e(url('admin/vehicles.php')) ?>"><span>▤</span>Fahrzeugflotte</a>

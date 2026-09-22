@@ -13,6 +13,12 @@
             var places=(data.points||[]).filter(function(item){return Number.isFinite(Number(item.lat))&&Number.isFinite(Number(item.lng));});
             var map=new Map(element,{center:{lat:7.65,lng:80.7},zoom:7,mapId:data.mapId||'DEMO_MAP_ID',mapTypeControl:false,streetViewControl:false,fullscreenControl:true});
             if(!places.length){message(data.labels.error);return;}
+            if(data.mode==='hiking'){
+                var hikingBounds=new LatLngBounds();
+                places.forEach(function(place,index){var hikingPin=new PinElement({glyph:String(index+1),background:'#15382e',borderColor:'#fff',glyphColor:'#fff'});new AdvancedMarkerElement({map:map,position:point(place),title:place.name,content:hikingPin.element});hikingBounds.extend(point(place));});
+                if(places.length===1){map.setCenter(point(places[0]));map.setZoom(10);}else{map.fitBounds(hikingBounds,42);}
+                message(data.labels.hiking||'');return;
+            }
             if(places.length===1){var pin=new PinElement({glyph:'1',background:'#15382e',borderColor:'#fff',glyphColor:'#fff'});new AdvancedMarkerElement({map:map,position:point(places[0]),title:places[0].name,content:pin.element});map.setCenter(point(places[0]));map.setZoom(9);message('');return;}
             var result=await Route.computeRoutes({origin:point(places[0]),destination:point(places[places.length-1]),intermediates:places.slice(1,-1).map(function(place){return{location:point(place)};}),travelMode:'DRIVING',region:'lk',fields:['path','legs','distanceMeters','durationMillis']});
             if(!result.routes||!result.routes.length)throw new Error('No route');

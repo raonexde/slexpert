@@ -23,7 +23,7 @@ $adminTitle = 'Reisebausteine';
 require __DIR__ . '/_header.php';
 ?>
 <div class="admin-content">
-    <div class="page-heading compact"><div><p>DEUTSCH & ENGLISCH</p><h1>Reisebausteine</h1><span>Reiseziele, Unterkünfte, Sehenswürdigkeiten, Aktivitäten, Restaurants, Gewürzgärten, Shops und Zusatzleistungen verwalten.</span></div><div class="heading-actions"><a class="secondary-button" href="classifications.php">Kategorien verwalten</a><a class="secondary-button" href="destination-edit.php">＋ Neuer Ort / Reiseziel</a><a class="primary-button" href="item-edit.php">＋ Neuer Baustein</a></div></div>
+    <div class="page-heading compact"><div><p>DEUTSCH & ENGLISCH</p><h1>Reisebausteine</h1><span>Reiseziele, Sehenswürdigkeiten, Aktivitäten, Restaurants, Gewürzgärten, Shops und Zusatzleistungen verwalten.</span></div><div class="heading-actions"><a class="secondary-button" href="hotels.php">Hotelverwaltung</a><a class="secondary-button" href="classifications.php">Kategorien verwalten</a><a class="secondary-button" href="destination-edit.php">＋ Neuer Ort / Reiseziel</a><a class="primary-button" href="item-edit.php">＋ Neuer Baustein</a></div></div>
     <h2 class="section-title">Reiseziele</h2>
     <div class="catalog-grid">
         <?php foreach ($destinations as $destination): ?><article class="catalog-card">

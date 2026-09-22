@@ -9,6 +9,7 @@
     var selectedItems = new Set();
     var selectedMealPlans = {};
     var selectedRooms = {};
+    var selectedRoomTypes = {};
     var activeStopUid = '';
     var activeType = 'accommodation';
     var formatter = new Intl.NumberFormat(lang === 'de' ? 'de-DE' : 'en-GB', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -22,6 +23,7 @@
     var printRouteList = document.querySelector('[data-print-route-list]');
     var travelers = document.querySelector('[data-travelers]');
     var tripDuration = document.querySelector('[data-trip-duration]');
+    var startDateInput = document.querySelector('input[name="start_date"]');
     var vehicleSelect = document.querySelector('[data-vehicle-select]');
     var vehicleServiceSelect = document.querySelector('[data-vehicle-service]');
     var vehicleCapacity = document.querySelector('[data-vehicle-capacity]');
@@ -103,16 +105,40 @@
             itemId: Number(String(key).slice(separator + 1))
         };
     }
-    function minimumRoomCount() {
-        return Math.max(1, Math.ceil(Number(travelers.value || 1) / 2));
+    function selectedRoomType(item, key) {
+        var rooms = item && item.room_types ? item.room_types : [];
+        if (!rooms.length) return null;
+        var selectedId = Number(selectedRoomTypes[key] || 0);
+        var room = rooms.find(function (candidate) { return Number(candidate.id) === selectedId; }) || rooms[0];
+        selectedRoomTypes[key] = Number(room.id);
+        return room;
+    }
+    function stopArrivalDate(stopUid) {
+        if (!startDateInput || !startDateInput.value) return '';
+        var offset=0;
+        for(var index=0;index<routeStops.length;index+=1){if(routeStops[index].uid===String(stopUid))break;offset+=Number(routeStops[index].nights||0);}
+        var date=new Date(startDateInput.value+'T00:00:00Z');date.setUTCDate(date.getUTCDate()+offset);return date.toISOString().slice(0,10);
+    }
+    function roomRate(room, nights, stopUid) {
+        if (!room) return 0;
+        var date = stopArrivalDate(stopUid);
+        var seasonal = (room.rates || []).find(function (rate) {
+            return date && (!rate.from || date >= rate.from) && (!rate.to || date <= rate.to) && Number(nights || 0) >= Number(rate.minimum_nights || 1);
+        });
+        return Number(seasonal ? seasonal.rate : room.rate || 0);
+    }
+    function minimumRoomCount(item, key) {
+        var room = selectedRoomType(item, key);
+        var occupancy = Math.max(1, Number(room ? room.standard_guests : 2));
+        return Math.max(1, Math.ceil(Number(travelers.value || 1) / occupancy));
     }
     function normaliseRoomCounts() {
         var people = Math.max(1, Number(travelers.value || 1));
-        var minimum = minimumRoomCount();
         Array.from(selectedItems).forEach(function (key) {
             var parts = selectionParts(key);
             var item = findItem(parts.itemId);
             if (!item || item.type !== 'accommodation') return;
+            var minimum = minimumRoomCount(item, key);
             selectedRooms[key] = Math.max(minimum, Math.min(people, Number(selectedRooms[key] || minimum)));
         });
     }
@@ -156,9 +182,13 @@
     function serviceDetails(item, key) {
         var details = [];
         if (item.type === 'accommodation') {
-            details.push(roomCountText(selectedRooms[key] || minimumRoomCount()));
+            var roomType = selectedRoomType(item, key);
+            if (roomType) details.push(text(roomType, 'name'));
+            details.push(roomCountText(selectedRooms[key] || minimumRoomCount(item, key)));
             var mealPlan = (item.meal_plans || []).find(function (plan) { return plan.code === selectedMealPlans[key]; });
             if (mealPlan) details.push(text(mealPlan, 'name'));
+            details.push(formatter.format(roomType ? roomRate(roomType, (findStop(selectionParts(key).stopUid)||{}).nights,selectionParts(key).stopUid) : item.price) + ' / ' + data.labels.perRoomNight);
+            return details.join(' · ');
         }
         details.push(servicePriceText(item));
         return details.join(' · ');
@@ -297,6 +327,7 @@
             selectedItems.delete(key);
             delete selectedMealPlans[key];
             delete selectedRooms[key];
+            delete selectedRoomTypes[key];
         });
         if (activeStopUid === stopUid) activeStopUid = routeStops.length ? routeStops[0].uid : '';
     }
@@ -425,13 +456,19 @@
             if (!isSelected || item.type !== 'accommodation') return '<div class="catalog-item-wrap">' + optionCard + '</div>';
 
             var people = Math.max(1, Number(travelers.value || 1));
-            var minimumRooms = minimumRoomCount();
+            var selectedType = selectedRoomType(item, key);
+            var minimumRooms = minimumRoomCount(item, key);
             selectedRooms[key] = Math.max(minimumRooms, Math.min(people, Number(selectedRooms[key] || minimumRooms)));
             var roomOptions = '';
             for (var roomCount = minimumRooms; roomCount <= people; roomCount += 1) {
                 roomOptions += '<option value="' + roomCount + '"' + (selectedRooms[key] === roomCount ? ' selected' : '') + '>' + esc(roomCountText(roomCount)) + '</option>';
             }
-            var roomSelector = '<label>' + esc(data.labels.roomSelection) + '<select data-room-count data-selection-key="' + esc(key) + '">' + roomOptions + '</select><small>' + esc(data.labels.doubleRoomNotice) + '</small></label>';
+            var roomTypeSelector = '';
+            if(item.room_types && item.room_types.length){
+                var typeOptions=item.room_types.map(function(room){return '<option value="'+room.id+'"'+(selectedType&&Number(selectedType.id)===Number(room.id)?' selected':'')+'>'+esc(text(room,'name'))+' · '+esc(formatter.format(roomRate(room,stop.nights,stop.uid)))+' / '+esc(data.labels.perRoomNight)+'</option>';}).join('');
+                roomTypeSelector='<label>'+esc(data.labels.roomType)+'<select data-room-type data-selection-key="'+esc(key)+'">'+typeOptions+'</select><small>'+esc(data.labels.doubleRoomNotice)+'</small></label>';
+            }
+            var roomSelector = '<label>' + esc(data.labels.roomSelection) + '<select data-room-count data-selection-key="' + esc(key) + '">' + roomOptions + '</select></label>';
             var mealSelector = '';
             if (item.meal_plans && item.meal_plans.length) {
                 var selectedCode = selectedMealPlans[key] || item.meal_plans[0].code;
@@ -442,7 +479,7 @@
                 }).join('');
                 mealSelector = '<label>' + esc(data.labels.mealPlan) + '<select data-meal-plan data-selection-key="' + esc(key) + '">' + mealOptions + '</select></label>';
             }
-            return '<div class="catalog-item-wrap selected">' + optionCard + '<div class="accommodation-controls">' + roomSelector + mealSelector + '</div></div>';
+            return '<div class="catalog-item-wrap selected">' + optionCard + '<div class="accommodation-controls">' + roomTypeSelector + roomSelector + mealSelector + '</div></div>';
         }).join('');
         catalogOptions.querySelectorAll('[data-item]').forEach(function (button) {
             button.addEventListener('click', function () {
@@ -459,15 +496,17 @@
                             selectedItems.delete(candidateKey);
                             delete selectedMealPlans[candidateKey];
                             delete selectedRooms[candidateKey];
+                            delete selectedRoomTypes[candidateKey];
                         });
                     }
                     selectedItems.add(key);
-                    if (item.type === 'accommodation') selectedRooms[key] = minimumRoomCount();
+                    if (item.type === 'accommodation') { selectedRoomType(item,key); selectedRooms[key] = minimumRoomCount(item,key); }
                     if (item.type === 'accommodation' && item.meal_plans && item.meal_plans.length) selectedMealPlans[key] = item.meal_plans[0].code;
                 }
                 if (!selectedItems.has(key)) {
                     delete selectedMealPlans[key];
                     delete selectedRooms[key];
+                    delete selectedRoomTypes[key];
                 }
                 renderAll();
             });
@@ -476,6 +515,11 @@
             select.addEventListener('change', function () {
                 selectedRooms[select.getAttribute('data-selection-key')] = Number(select.value);
                 renderSummary();
+            });
+        });
+        catalogOptions.querySelectorAll('[data-room-type]').forEach(function (select) {
+            select.addEventListener('change', function () {
+                var key=select.getAttribute('data-selection-key');selectedRoomTypes[key]=Number(select.value);var parts=selectionParts(key),item=findItem(parts.itemId);selectedRooms[key]=minimumRoomCount(item,key);renderAll();
             });
         });
         catalogOptions.querySelectorAll('[data-meal-plan]').forEach(function (select) {
@@ -498,7 +542,7 @@
             var stop = findStop(parts.stopUid);
             if (!item || !stop) return;
             var nights = Number(stop.nights);
-            if (item.type === 'accommodation') estimate += item.price * (selectedRooms[key] || minimumRoomCount()) * nights;
+            if (item.type === 'accommodation') { var chosenRoom=selectedRoomType(item,key); estimate += (chosenRoom?roomRate(chosenRoom,nights,parts.stopUid):Number(item.price||0)) * (selectedRooms[key] || minimumRoomCount(item,key)) * nights; }
             else if (item.price_basis === 'per_person_night') estimate += item.price * people * nights;
             else if (item.price_basis === 'per_booking') estimate += item.price;
             else estimate += item.price * people;
@@ -526,7 +570,7 @@
         document.getElementById('destinations-json').value = JSON.stringify(routeStops.map(function (stop, index) { return { id: stop.destination_id, stop_uid: stop.uid, nights: stop.nights, order: index }; }));
         document.getElementById('items-json').value = JSON.stringify(Array.from(selectedItems).map(function (key) {
             var parts = selectionParts(key);
-            return { id: parts.itemId, stop_uid: parts.stopUid, meal_plan_code: selectedMealPlans[key] || '', rooms: selectedRooms[key] || 0 };
+            return { id: parts.itemId, stop_uid: parts.stopUid, meal_plan_code: selectedMealPlans[key] || '', rooms: selectedRooms[key] || 0, room_type_id: selectedRoomTypes[key] || 0 };
         }));
         document.getElementById('estimate-input').value = String(Math.round(estimate));
         if (tripDuration) {
@@ -740,6 +784,7 @@
         renderSummary();
     });
     if (guideSelect) guideSelect.addEventListener('change', function () { selectedGuideId = Number(guideSelect.value || 0); renderSummary(); });
+    if (startDateInput) startDateInput.addEventListener('change', renderAll);
     if (destinationSearch) destinationSearch.addEventListener('input', renderRoutes);
     document.querySelector('[data-night-down]').addEventListener('click', function () {
         var stop = activeStop();
@@ -769,7 +814,7 @@
                 selectedItems.add(key);
                 if (item.type === 'accommodation') {
                     accommodationSelected = true;
-                    selectedRooms[key] = minimumRoomCount();
+                    selectedRoomType(item,key);selectedRooms[key] = minimumRoomCount(item,key);
                     if (item.meal_plans && item.meal_plans.length) selectedMealPlans[key] = item.meal_plans[0].code;
                 }
             });

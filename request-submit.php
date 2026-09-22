@@ -125,6 +125,7 @@ $guideCost = round($guideDailyRate * $guideDays, 2);
 
 $requestedMealPlans = [];
 $requestedRoomCounts = [];
+$requestedRoomTypeIds = [];
 $requestedItems = [];
 $cleanItemIds = [];
 $submittedSelectionKeys = [];
@@ -141,6 +142,7 @@ foreach (is_array($submittedItems) ? array_slice($submittedItems, 0, 100) : [] a
     if (is_array($submittedItem)) {
         $requestedMealPlans[$selectionKey] = substr(trim((string)($submittedItem['meal_plan_code'] ?? '')), 0, 40);
         $requestedRoomCounts[$selectionKey] = (int)($submittedItem['rooms'] ?? 0);
+        $requestedRoomTypeIds[$selectionKey] = max(0,(int)($submittedItem['room_type_id'] ?? 0));
     }
 }
 $validItems = [];
@@ -173,6 +175,9 @@ if ($cleanItemIds) {
             if (isset($requestedRoomCounts[$requestedItem['selection_key']])) {
                 $requestedRoomCounts[$selectionKey] = $requestedRoomCounts[$requestedItem['selection_key']];
             }
+            if (isset($requestedRoomTypeIds[$requestedItem['selection_key']])) {
+                $requestedRoomTypeIds[$selectionKey] = $requestedRoomTypeIds[$requestedItem['selection_key']];
+            }
         }
         if (isset($validSelectionKeys[$selectionKey])) continue;
         $validSelectionKeys[$selectionKey] = true;
@@ -198,10 +203,38 @@ foreach ($validItems as &$validItem) {
     $validItem['meal_plan_name_de'] = '';
     $validItem['meal_plan_name_en'] = '';
     $validItem['meal_plan_supplement'] = 0.0;
+    $validItem['room_type_id'] = null;
+    $validItem['room_type_code'] = '';
+    $validItem['room_type_name_de'] = '';
+    $validItem['room_type_name_en'] = '';
     $validItem['line_total'] = 0.0;
     if ($validItem['type'] !== 'accommodation') continue;
-    $minimumRooms = max(1, (int)ceil($travelers / 2));
     $selectionKey = $validItem['selection_key'];
+    $requestedRoomTypeId = $requestedRoomTypeIds[$selectionKey] ?? 0;
+    $roomTypeStmt = db()->prepare('SELECT * FROM hotel_room_types WHERE hotel_id=? AND active=1 AND (?=0 OR id=?) ORDER BY featured DESC,sort_order,id LIMIT 1');
+    $roomTypeStmt->execute([(int)$validItem['id'],$requestedRoomTypeId,$requestedRoomTypeId]);
+    $roomType = $roomTypeStmt->fetch() ?: null;
+    if ($roomType) {
+        $nights=(int)($destinationByStopUid[$validItem['stop_uid']]['nights']??0);
+        $roomRate=(float)$roomType['base_rate_per_room_night'];
+        if($startDate){
+            $arrivalOffset=0;
+            foreach($destinationRows as $routeStop){if($routeStop['stop_uid']===$validItem['stop_uid'])break;$arrivalOffset+=(int)$routeStop['nights'];}
+            $roomDate=(new DateTimeImmutable($startDate))->modify('+'.$arrivalOffset.' days')->format('Y-m-d');
+            $rateStmt=db()->prepare('SELECT price_per_room_night FROM hotel_room_rates WHERE room_type_id=? AND active=1 AND minimum_nights<=? AND (valid_from IS NULL OR valid_from<=?) AND (valid_to IS NULL OR valid_to>=?) ORDER BY valid_from DESC,sort_order,id LIMIT 1');
+            $rateStmt->execute([(int)$roomType['id'],$nights,$roomDate,$roomDate]);
+            $seasonal=$rateStmt->fetchColumn();if($seasonal!==false)$roomRate=(float)$seasonal;
+        }
+        $validItem['price_per_person']=$roomRate;
+        $validItem['room_type_id']=(int)$roomType['id'];
+        $validItem['room_type_code']=$roomType['code'];
+        $validItem['room_type_name_de']=$roomType['name_de'];
+        $validItem['room_type_name_en']=$roomType['name_en'];
+        $standardGuests=max(1,(int)$roomType['standard_guests']);
+    } else {
+        $standardGuests=2;
+    }
+    $minimumRooms = max(1, (int)ceil($travelers / $standardGuests));
     $validItem['room_count'] = max($minimumRooms, min($travelers, $requestedRoomCounts[$selectionKey] ?? $minimumRooms));
     if (empty($mealPlansByItem[(int)$validItem['id']])) continue;
     $availablePlans = $mealPlansByItem[(int)$validItem['id']];
@@ -289,9 +322,9 @@ try {
         $routeRowIds[$row['stop_uid']] = (int)$pdo->lastInsertId();
     }
 
-    $itemInsert = $pdo->prepare('INSERT INTO tour_request_items (request_id,request_destination_id,item_id,quantity,room_count,unit_price,price_basis,line_total,adult_quantity,child_quantity,meal_plan_code,meal_plan_name_de,meal_plan_name_en,meal_plan_supplement) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+    $itemInsert = $pdo->prepare('INSERT INTO tour_request_items (request_id,request_destination_id,item_id,quantity,room_count,room_type_id,room_type_code,room_type_name_de,room_type_name_en,unit_price,price_basis,line_total,adult_quantity,child_quantity,meal_plan_code,meal_plan_name_de,meal_plan_name_en,meal_plan_supplement) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
     foreach ($validItems as $row) {
-        $itemInsert->execute([$requestId,$routeRowIds[$row['stop_uid']]??null,$row['id'],$travelers,$row['room_count'],$row['price_per_person'],$row['type']==='accommodation'?'per_room_night':$row['price_basis'],$row['line_total'],$travelers,0,$row['meal_plan_code'],$row['meal_plan_name_de'],$row['meal_plan_name_en'],$row['meal_plan_supplement']]);
+        $itemInsert->execute([$requestId,$routeRowIds[$row['stop_uid']]??null,$row['id'],$travelers,$row['room_count'],$row['room_type_id'],$row['room_type_code'],$row['room_type_name_de'],$row['room_type_name_en'],$row['price_per_person'],$row['type']==='accommodation'?'per_room_night':$row['price_basis'],$row['line_total'],$travelers,0,$row['meal_plan_code'],$row['meal_plan_name_de'],$row['meal_plan_name_en'],$row['meal_plan_supplement']]);
     }
     $pdo->commit();
 

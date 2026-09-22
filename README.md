@@ -1,4 +1,4 @@
-# Sri Lanka Expert · Version 12.5.2
+# Sri Lanka Expert · Version 12.7
 
 Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/MariaDB 10.4+.
 
@@ -52,6 +52,12 @@ Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/
 - Printable live route preview and professional saved itinerary/PDF view
 - 32 active Sri Lanka destination hubs plus 12 editable specialist drafts
 - One accommodation selection per destination
+- Dedicated Hotel Management section with add, edit, archive and safe-delete workflows
+- Multiple bilingual room categories per hotel, including images, beds, amenities, occupancy and inventory
+- Base room rates plus editable seasonal date ranges and minimum-night rules
+- Hotel-specific assignment of sights, activities, restaurants, shops and additional services
+- Room-category selection and pricing in tailor-made, Beach, Ayurveda and Maldives planners
+- Stored room-category snapshots in enquiries, administration and printable proposals
 - Double-room pricing per room and night, with an adjustable room count
 - Automatic minimum room count based on two travellers per double room
 - Hotel-specific meal-plan selection: room only, breakfast, half board, full board or all inclusive
@@ -170,6 +176,7 @@ Do not commit or publicly share config.local.php.
 - Bookings and payments: /admin/bookings.php
 - B2B agencies: /admin/agents.php
 - Destinations and content: /admin/catalog.php
+- Hotels, room categories and seasonal prices: /admin/hotels.php
 - Vehicle fleet: /admin/vehicles.php
 - Website, company, social-media and Google Maps settings: /admin/settings.php
 - Customer journey builder: /plan.php?mode=admin
@@ -181,6 +188,10 @@ Do not commit or publicly share config.local.php.
 Use the content area to add destinations, accommodation, sights, activities, shops and additional services in German and English.
 
 Ready-made routes are managed under **Admin → Ready-made tours**. Each template has bilingual sales text, an ordered itinerary, editable nights, one preselected hotel per stop, multiple included sights/activities/shops/services, seasonal prices and publication controls. **Duplicate** creates a private draft that can be adapted without changing the source. A public customer who clicks **Customise this tour** receives an independent planner copy; later changes to the master template do not alter the submitted enquiry.
+
+Version 12.6 adds a dedicated hiking profile to ready-made tours. The included **Knuckles Hiking: Hunnas Falls, Sembuwatta Lake & One Tree Hill** template contains editable distance, ascent, descent, elevation range, moving time, total time, start, finish, route type, guide requirement, safety notes and source URL. These facts appear on the public tour page and its print/PDF version. Hiking maps show the relevant region instead of calculating a misleading driving route; the exact recorded GPS track remains linked to its source. The hike is also inserted as an editable activity so it remains visible after a customer copies the template into the tailor-made planner.
+
+Version 12.7 adds **Admin → Hotel Management**. Existing accommodation entries remain intact and receive an editable Double room category using their previous per-room/night price. Administrators can add any number of room categories, room images, occupancy rules, inventory, seasonal prices and minimum stays. A hotel can be linked to specific local services. Unused records can be deleted; hotels or rooms referenced by enquiries or tours are archived to preserve historical documents. The selected room category and price are validated by the server, stored as a snapshot and printed on the itinerary or hotel proposal.
 
 Each accommodation can be enabled for Beach Vacation, Ayurveda stays, Maldives stays, or any combination. The same edit form controls standard occupancy, maximum occupancy with an extra bed, the adult extra-bed percentage, child percentage, child age limit and allowed Ayurveda night packages. Sights, activities, shops and Additional Services can also be enabled separately for each single-hotel area.
 

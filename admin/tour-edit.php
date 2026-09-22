@@ -14,6 +14,11 @@ $tour = [
 ];
 $stops = [];
 $prices = [];
+$hiking = [
+    'enabled'=>0,'distance_km'=>0,'elevation_gain_m'=>0,'elevation_loss_m'=>0,'min_elevation_m'=>0,'max_elevation_m'=>0,
+    'moving_minutes'=>0,'total_minutes'=>0,'route_type_de'=>'Strecke · kein Rundweg','route_type_en'=>'One way · not a loop',
+    'start_location_de'=>'','start_location_en'=>'','end_location_de'=>'','end_location_en'=>'','guide_required'=>1,'source_url'=>'','notes_de'=>'','notes_en'=>'',
+];
 
 $loadId = $id > 0 ? $id : $duplicateId;
 if ($loadId > 0) {
@@ -31,6 +36,10 @@ if ($loadId > 0) {
     $priceStmt = db()->prepare('SELECT * FROM tour_template_prices WHERE tour_template_id=? ORDER BY sort_order,id');
     $priceStmt->execute([$loadId]);
     $prices = $priceStmt->fetchAll();
+    $hikingStmt = db()->prepare('SELECT * FROM tour_hiking_details WHERE tour_template_id=?');
+    $hikingStmt->execute([$loadId]);
+    $loadedHiking = $hikingStmt->fetch();
+    if ($loadedHiking) $hiking = array_merge($hiking,$loadedHiking,['enabled'=>1]);
     if ($duplicateId > 0) {
         $tour['id'] = 0;
         $tour['slug'] = $tour['slug'] . '-copy';
@@ -148,6 +157,34 @@ if (request_is_post()) {
             $to = preg_match('/^\d{4}-\d{2}-\d{2}$/',(string)($validTo[$index] ?? '')) ? $validTo[$index] : null;
             $insertPrice->execute([$id,$labelDe,$labelEn,$from,$to,max(1,min(50,(int)($priceMins[$index] ?? 1))),max(1,min(50,(int)($priceMaxes[$index] ?? 20))),$amount,isset($priceActive[$index])?1:0,$index*10]);
         }
+
+        if (isset($_POST['is_hiking_itinerary'])) {
+            $sourceUrl = substr(trim((string)($_POST['hiking_source_url'] ?? '')),0,500);
+            if ($sourceUrl !== '' && !filter_var($sourceUrl,FILTER_VALIDATE_URL)) throw new RuntimeException('Die Quellen-URL der Wanderung ist ungültig.');
+            $hikingValues = [
+                $id,
+                max(0,round((float)str_replace(',','.',(string)($_POST['hiking_distance_km'] ?? '0')),2)),
+                max(0,min(65535,(int)($_POST['hiking_elevation_gain_m'] ?? 0))),
+                max(0,min(65535,(int)($_POST['hiking_elevation_loss_m'] ?? 0))),
+                max(0,min(65535,(int)($_POST['hiking_min_elevation_m'] ?? 0))),
+                max(0,min(65535,(int)($_POST['hiking_max_elevation_m'] ?? 0))),
+                max(0,min(65535,(int)($_POST['hiking_moving_minutes'] ?? 0))),
+                max(0,min(65535,(int)($_POST['hiking_total_minutes'] ?? 0))),
+                substr(trim((string)($_POST['hiking_route_type_de'] ?? '')),0,120),
+                substr(trim((string)($_POST['hiking_route_type_en'] ?? '')),0,120),
+                substr(trim((string)($_POST['hiking_start_location_de'] ?? '')),0,190),
+                substr(trim((string)($_POST['hiking_start_location_en'] ?? '')),0,190),
+                substr(trim((string)($_POST['hiking_end_location_de'] ?? '')),0,190),
+                substr(trim((string)($_POST['hiking_end_location_en'] ?? '')),0,190),
+                isset($_POST['hiking_guide_required'])?1:0,
+                $sourceUrl,
+                trim((string)($_POST['hiking_notes_de'] ?? '')),
+                trim((string)($_POST['hiking_notes_en'] ?? '')),
+            ];
+            $pdo->prepare('INSERT INTO tour_hiking_details (tour_template_id,distance_km,elevation_gain_m,elevation_loss_m,min_elevation_m,max_elevation_m,moving_minutes,total_minutes,route_type_de,route_type_en,start_location_de,start_location_en,end_location_de,end_location_en,guide_required,source_url,notes_de,notes_en) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE distance_km=VALUES(distance_km),elevation_gain_m=VALUES(elevation_gain_m),elevation_loss_m=VALUES(elevation_loss_m),min_elevation_m=VALUES(min_elevation_m),max_elevation_m=VALUES(max_elevation_m),moving_minutes=VALUES(moving_minutes),total_minutes=VALUES(total_minutes),route_type_de=VALUES(route_type_de),route_type_en=VALUES(route_type_en),start_location_de=VALUES(start_location_de),start_location_en=VALUES(start_location_en),end_location_de=VALUES(end_location_de),end_location_en=VALUES(end_location_en),guide_required=VALUES(guide_required),source_url=VALUES(source_url),notes_de=VALUES(notes_de),notes_en=VALUES(notes_en)')->execute($hikingValues);
+        } else {
+            $pdo->prepare('DELETE FROM tour_hiking_details WHERE tour_template_id=?')->execute([$id]);
+        }
         $pdo->commit();
         flash('success','Reisevorlage wurde gespeichert.');
         redirect('admin/tour-edit.php?id=' . $id);
@@ -193,6 +230,25 @@ require __DIR__ . '/_header.php';
             <label>Enthalten Deutsch<textarea name="includes_de" rows="6" placeholder="Eine Leistung pro Zeile"><?= e($tour['includes_de']) ?></textarea></label><label>Included English<textarea name="includes_en" rows="6" placeholder="One item per line"><?= e($tour['includes_en']) ?></textarea></label>
             <label>Nicht enthalten Deutsch<textarea name="excludes_de" rows="5" placeholder="Eine Leistung pro Zeile"><?= e($tour['excludes_de']) ?></textarea></label><label>Excluded English<textarea name="excludes_en" rows="5" placeholder="One item per line"><?= e($tour['excludes_en']) ?></textarea></label>
         </div></section>
+        <section class="admin-card form-card hiking-editor"><div class="card-head"><div><h2>Wanderroute</h2><p>Optionale Wanderdaten für Detailseite und Druckversion</p></div><label class="check"><input type="checkbox" name="is_hiking_itinerary" value="1"<?= checked((bool)$hiking['enabled']) ?>> Als Wanderreise anzeigen</label></div><div class="form-grid thirds">
+            <label>Distanz (km)<input type="number" name="hiking_distance_km" min="0" step="0.01" value="<?= e($hiking['distance_km']) ?>"></label>
+            <label>Aufstieg (m)<input type="number" name="hiking_elevation_gain_m" min="0" step="1" value="<?= (int)$hiking['elevation_gain_m'] ?>"></label>
+            <label>Abstieg (m)<input type="number" name="hiking_elevation_loss_m" min="0" step="1" value="<?= (int)$hiking['elevation_loss_m'] ?>"></label>
+            <label>Niedrigster Punkt (m)<input type="number" name="hiking_min_elevation_m" min="0" step="1" value="<?= (int)$hiking['min_elevation_m'] ?>"></label>
+            <label>Höchster Punkt (m)<input type="number" name="hiking_max_elevation_m" min="0" step="1" value="<?= (int)$hiking['max_elevation_m'] ?>"></label>
+            <label>Bewegungszeit (Min.)<input type="number" name="hiking_moving_minutes" min="0" step="1" value="<?= (int)$hiking['moving_minutes'] ?>"></label>
+            <label>Gesamtzeit (Min.)<input type="number" name="hiking_total_minutes" min="0" step="1" value="<?= (int)$hiking['total_minutes'] ?>"></label>
+            <label>Routentyp Deutsch<input name="hiking_route_type_de" maxlength="120" value="<?= e($hiking['route_type_de']) ?>"></label>
+            <label>Route type English<input name="hiking_route_type_en" maxlength="120" value="<?= e($hiking['route_type_en']) ?>"></label>
+            <label>Start Deutsch<input name="hiking_start_location_de" maxlength="190" value="<?= e($hiking['start_location_de']) ?>"></label>
+            <label>Start English<input name="hiking_start_location_en" maxlength="190" value="<?= e($hiking['start_location_en']) ?>"></label>
+            <label>Ziel Deutsch<input name="hiking_end_location_de" maxlength="190" value="<?= e($hiking['end_location_de']) ?>"></label>
+            <label>Finish English<input name="hiking_end_location_en" maxlength="190" value="<?= e($hiking['end_location_en']) ?>"></label>
+            <label class="check"><input type="checkbox" name="hiking_guide_required" value="1"<?= checked((bool)$hiking['guide_required']) ?>> Wanderführer erforderlich</label>
+            <label class="span-two">Quelle / Referenzroute<input type="url" name="hiking_source_url" maxlength="500" value="<?= e($hiking['source_url']) ?>" placeholder="https://..."></label>
+            <label>Hinweise Deutsch<textarea name="hiking_notes_de" rows="5"><?= e($hiking['notes_de']) ?></textarea></label>
+            <label>Notes English<textarea name="hiking_notes_en" rows="5"><?= e($hiking['notes_en']) ?></textarea></label>
+        </div><p class="form-help">Die Google-Karte zeigt bei Wanderreisen nur die Region. Die exakte GPS-Spur bleibt über die Quellen-URL erreichbar, damit keine Straßenroute als Wanderweg dargestellt wird.</p></section>
         <section class="admin-card tour-route-builder"><div class="card-head"><div><h2>Reiseverlauf</h2><p>Etappen verschieben, Nächte ändern und Hotels, Sehenswürdigkeiten, Aktivitäten oder Shops hinzufügen.</p></div><button class="secondary-button" type="button" data-add-stop>＋ Station</button></div><div class="tour-stop-list" data-stop-list></div><p class="form-help">Eine Unterkunft und mehrere weitere Leistungen können pro Station vorausgewählt werden. 0 Nächte sind für reine Zwischenstopps möglich.</p></section>
         <section class="admin-card tour-price-builder"><div class="card-head"><div><h2>Saisonpreise</h2><p>Optionale Preisstaffeln pro Person nach Zeitraum und Gruppengröße.</p></div><button class="secondary-button" type="button" data-add-price>＋ Preiszeile</button></div><div class="tour-price-list" data-price-list></div></section>
         <div class="form-actions"><a href="tours.php">Abbrechen</a><button class="primary-button" type="submit">Reisevorlage speichern</button></div>

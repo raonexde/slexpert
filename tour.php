@@ -22,6 +22,15 @@ if ($stops) {
 $priceStmt=db()->prepare('SELECT * FROM tour_template_prices WHERE tour_template_id=? AND active=1 ORDER BY sort_order,id');
 $priceStmt->execute([$tour['id']]);
 $prices=$priceStmt->fetchAll();
+$hikingStmt=db()->prepare('SELECT * FROM tour_hiking_details WHERE tour_template_id=?');
+$hikingStmt->execute([$tour['id']]);
+$hiking=$hikingStmt->fetch() ?: null;
+$formatMinutes=static function (int $minutes): string {
+    if ($minutes <= 0) return '—';
+    $hours=intdiv($minutes,60);
+    $remaining=$minutes%60;
+    return $hours > 0 ? $hours.' '.t('Std.','hr').($remaining > 0 ? ' '.$remaining.' '.t('Min.','min') : '') : $remaining.' '.t('Min.','min');
+};
 $settings = db()->query("SELECT setting_key,setting_value FROM settings WHERE setting_key IN ('google_maps_api_key','google_maps_map_id')")->fetchAll(PDO::FETCH_KEY_PAIR);
 $categoryLabels=['winter'=>t('Winterurlaub','Winter holiday'),'summer'=>t('Sommerurlaub','Summer holiday'),'sport'=>t('Sport & Abenteuer','Sport & adventure'),'culture'=>t('Kultur','Culture'),'discovery'=>t('Kennenlernen','Discovery'),'backpacker'=>t('Backpacker','Backpacker'),'ayurveda'=>t('Ayurveda & Rundreise','Ayurveda & touring'),'family'=>t('Familie','Family'),'luxury'=>t('Luxus','Luxury')];
 $typeLabels=['accommodation'=>t('Unterkunft','Accommodation'),'sight'=>t('Sehenswürdigkeit','Sight'),'activity'=>t('Aktivität','Activity'),'restaurant'=>t('Restaurant','Restaurant'),'spice_garden'=>t('Gewürzgarten','Spice garden'),'shop'=>t('Lokaler Shop','Local shop'),'service'=>t('Zusatzleistung','Additional service')];
@@ -38,6 +47,24 @@ $heroImage=$tour['image_path']?url($tour['image_path']):asset('images/hero.jpg')
         <aside><div><small><?= e(t('Dauer','Duration')) ?></small><strong><?= (int)$tour['duration_nights'] ?> <?= e(t('Nächte','nights')) ?></strong></div><div><small><?= e(t('Saison','Season')) ?></small><strong><?= e($tour['season_'.lang()]) ?></strong></div><div><small><?= e(t('Reisestil','Travel style')) ?></small><strong><?= e($tour['difficulty_'.lang()]) ?></strong></div><div><small><?= e(t('Richtpreis ab','Guide price from')) ?></small><strong><?= e(money(price_with_markup($tour['price_from']))) ?> <?= e(t('p. P.','p.p.')) ?></strong></div></aside>
     </section>
     <section class="tour-detail-intro"><p class="eyebrow dark"><?= e(t('Fertige Route · vollständig anpassbar','Ready route · fully customisable')) ?></p><div><h2><?= e(t('Ein guter Ausgangspunkt für Ihre persönliche Reise.','A strong starting point for your personal journey.')) ?></h2><div><?= nl2br(e($tour['description_'.lang()])) ?></div></div></section>
+    <?php if ($hiking): ?>
+    <section class="hiking-facts">
+        <div class="hiking-facts-heading"><p class="eyebrow dark"><?= e(t('Wanderprofil','Hiking profile')) ?></p><h2><?= e(t('Die Route auf einen Blick.','The trail at a glance.')) ?></h2></div>
+        <div class="hiking-facts-grid">
+            <article><small><?= e(t('Distanz','Distance')) ?></small><strong><?= e(number_format((float)$hiking['distance_km'],2,lang()==='de'?',':'.','')) ?> km</strong></article>
+            <article><small><?= e(t('Aufstieg','Elevation gain')) ?></small><strong>+<?= (int)$hiking['elevation_gain_m'] ?> m</strong></article>
+            <article><small><?= e(t('Abstieg','Elevation loss')) ?></small><strong>−<?= (int)$hiking['elevation_loss_m'] ?> m</strong></article>
+            <article><small><?= e(t('Höhenlage','Elevation range')) ?></small><strong><?= (int)$hiking['min_elevation_m'] ?>–<?= (int)$hiking['max_elevation_m'] ?> m</strong></article>
+            <article><small><?= e(t('Bewegungszeit','Moving time')) ?></small><strong><?= e($formatMinutes((int)$hiking['moving_minutes'])) ?></strong></article>
+            <article><small><?= e(t('Gesamtzeit','Total time')) ?></small><strong><?= e($formatMinutes((int)$hiking['total_minutes'])) ?></strong></article>
+            <article><small><?= e(t('Routentyp','Route type')) ?></small><strong><?= e($hiking['route_type_'.lang()]) ?></strong></article>
+            <article><small><?= e(t('Führung','Guiding')) ?></small><strong><?= e((int)$hiking['guide_required']===1?t('Wanderführer erforderlich','Guide required'):t('Optional','Optional')) ?></strong></article>
+        </div>
+        <div class="hiking-route-line"><span><small><?= e(t('Start','Start')) ?></small><strong><?= e($hiking['start_location_'.lang()]) ?></strong></span><b>→</b><span><small><?= e(t('Ziel','Finish')) ?></small><strong><?= e($hiking['end_location_'.lang()]) ?></strong></span></div>
+        <p class="hiking-warning"><?= nl2br(e($hiking['notes_'.lang()])) ?></p>
+        <?php if ($hiking['source_url']): ?><a class="hiking-source" href="<?= e($hiking['source_url']) ?>" target="_blank" rel="noopener noreferrer"><?= e(t('Originale GPS-Referenz auf Wikiloc ansehen','View original GPS reference on Wikiloc')) ?> ↗</a><?php endif; ?>
+    </section>
+    <?php endif; ?>
     <section class="tour-detail-layout">
         <div class="tour-itinerary">
             <div class="tour-section-heading"><p class="eyebrow dark"><?= e(t('Reiseverlauf','Journey')) ?></p><h2><?= e(t('Ihre Route Tag für Tag.','Your route, stage by stage.')) ?></h2></div>
@@ -50,13 +77,13 @@ $heroImage=$tour['image_path']?url($tour['image_path']):asset('images/hero.jpg')
             </ol>
         </div>
         <aside class="tour-route-side">
-            <section class="tour-map-card"><div><p>GOOGLE MAPS</p><h2><?= e(t('Die vorgeschlagene Route','The suggested route')) ?></h2></div><div class="tour-map-canvas" data-tour-map></div><p data-tour-map-status><?= e(t('Karte wird vorbereitet …','Preparing map…')) ?></p></section>
+            <section class="tour-map-card"><div><p>GOOGLE MAPS</p><h2><?= e($hiking?t('Die Wanderregion','The hiking region'):t('Die vorgeschlagene Route','The suggested route')) ?></h2></div><div class="tour-map-canvas" data-tour-map></div><p data-tour-map-status><?= e(t('Karte wird vorbereitet …','Preparing map…')) ?></p></section>
             <?php if ($prices): ?><section class="tour-prices"><h3><?= e(t('Saisonpreise','Seasonal prices')) ?></h3><?php foreach($prices as $price): ?><div><span><?= e($price['label_'.lang()]) ?><small><?= (int)$price['min_travelers'] ?>–<?= (int)$price['max_travelers'] ?> <?= e(t('Reisende','travellers')) ?></small></span><strong><?= e(money(price_with_markup($price['price_per_person']))) ?> <?= e(t('p. P.','p.p.')) ?></strong></div><?php endforeach; ?></section><?php endif; ?>
         </aside>
     </section>
     <section class="tour-inclusions"><article><p class="eyebrow dark"><?= e(t('Enthalten','Included')) ?></p><h2><?= e(t('Was bereits vorgesehen ist.','What is already planned.')) ?></h2><ul><?php foreach(text_lines($tour['includes_'.lang()]) as $line): ?><li>✓ <?= e($line) ?></li><?php endforeach; ?></ul></article><article><p class="eyebrow dark"><?= e(t('Nicht enthalten','Not included')) ?></p><h2><?= e(t('Was separat bleibt.','What remains separate.')) ?></h2><ul><?php foreach(text_lines($tour['excludes_'.lang()]) as $line): ?><li>— <?= e($line) ?></li><?php endforeach; ?></ul></article></section>
     <section class="tour-customise-cta"><div><p class="eyebrow"><?= e(t('Ihre Reise beginnt hier','Your journey begins here')) ?></p><h2><?= e(t('Übernehmen Sie die Route und ändern Sie alles, was zu Ihnen passen soll.','Use this route and change everything that should suit you.')) ?></h2></div><a class="button button-gold" href="<?= e(url('plan.php?tour='.(int)$tour['id'].'&lang='.lang())) ?>"><?= e(t('Tour jetzt anpassen','Customise tour now')) ?> <b>→</b></a></section>
 </main>
-<script>window.TOUR_MAP_DATA=<?= json_encode(['language'=>lang(),'apiKey'=>trim((string)($settings['google_maps_api_key']??'')),'mapId'=>trim((string)($settings['google_maps_map_id']??''))?:'DEMO_MAP_ID','points'=>array_map(static fn(array $stop):array=>['name'=>$stop['destination_name_'.lang()],'lat'=>$stop['latitude']!==null?(float)$stop['latitude']:null,'lng'=>$stop['longitude']!==null?(float)$stop['longitude']:null],$stops),'labels'=>['missing'=>t('Google Maps ist noch nicht eingerichtet.','Google Maps is not configured yet.'),'error'=>t('Die Route konnte nicht geladen werden.','The route could not be loaded.')]],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG) ?>;</script>
+<script>window.TOUR_MAP_DATA=<?= json_encode(['language'=>lang(),'mode'=>$hiking?'hiking':'driving','apiKey'=>trim((string)($settings['google_maps_api_key']??'')),'mapId'=>trim((string)($settings['google_maps_map_id']??''))?:'DEMO_MAP_ID','points'=>array_map(static fn(array $stop):array=>['name'=>$stop['destination_name_'.lang()],'lat'=>$stop['latitude']!==null?(float)$stop['latitude']:null,'lng'=>$stop['longitude']!==null?(float)$stop['longitude']:null],$stops),'labels'=>['missing'=>t('Google Maps ist noch nicht eingerichtet.','Google Maps is not configured yet.'),'error'=>t('Die Route konnte nicht geladen werden.','The route could not be loaded.'),'hiking'=>t('Die Karte zeigt die Wanderregion. Die exakte GPS-Spur ist über die Referenzroute verfügbar.','The map shows the hiking region. The exact GPS track is available from the reference route.')]],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG) ?>;</script>
 <script src="<?= e(asset('js/tour-map.js')) ?>"></script>
 <?php require __DIR__.'/includes/public-footer.php'; ?>

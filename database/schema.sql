@@ -114,6 +114,65 @@ CREATE TABLE IF NOT EXISTS accommodation_meal_plans (
     INDEX idx_meal_plan_item_active_sort (catalog_item_id, active, sort_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS hotel_room_types (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    hotel_id INT UNSIGNED NOT NULL,
+    code VARCHAR(80) NOT NULL,
+    name_de VARCHAR(190) NOT NULL,
+    name_en VARCHAR(190) NOT NULL,
+    description_de TEXT NOT NULL,
+    description_en TEXT NOT NULL,
+    bed_type_de VARCHAR(120) NOT NULL DEFAULT '',
+    bed_type_en VARCHAR(120) NOT NULL DEFAULT '',
+    amenities_de TEXT NOT NULL,
+    amenities_en TEXT NOT NULL,
+    base_rate_per_room_night DECIMAL(10,2) NOT NULL DEFAULT 0,
+    standard_guests TINYINT UNSIGNED NOT NULL DEFAULT 2,
+    max_guests TINYINT UNSIGNED NOT NULL DEFAULT 3,
+    extra_bed_allowed TINYINT(1) NOT NULL DEFAULT 1,
+    extra_bed_percent DECIMAL(5,2) NOT NULL DEFAULT 30,
+    child_percent DECIMAL(5,2) NOT NULL DEFAULT 50,
+    room_size_sqm SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    inventory SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    image_path VARCHAR(255) NULL,
+    featured TINYINT(1) NOT NULL DEFAULT 0,
+    active TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_hotel_room_hotel FOREIGN KEY (hotel_id) REFERENCES catalog_items(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_hotel_room_code (hotel_id, code),
+    INDEX idx_hotel_room_active (hotel_id, active, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS hotel_room_rates (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    room_type_id INT UNSIGNED NOT NULL,
+    label_de VARCHAR(120) NOT NULL,
+    label_en VARCHAR(120) NOT NULL,
+    valid_from DATE NULL,
+    valid_to DATE NULL,
+    price_per_room_night DECIMAL(10,2) NOT NULL DEFAULT 0,
+    minimum_nights TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    active TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_hotel_rate_room FOREIGN KEY (room_type_id) REFERENCES hotel_room_types(id) ON DELETE CASCADE,
+    INDEX idx_hotel_rate_dates (room_type_id, active, valid_from, valid_to)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS hotel_related_items (
+    hotel_id INT UNSIGNED NOT NULL,
+    catalog_item_id INT UNSIGNED NOT NULL,
+    included TINYINT(1) NOT NULL DEFAULT 0,
+    sort_order INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (hotel_id, catalog_item_id),
+    CONSTRAINT fk_hotel_related_hotel FOREIGN KEY (hotel_id) REFERENCES catalog_items(id) ON DELETE CASCADE,
+    CONSTRAINT fk_hotel_related_item FOREIGN KEY (catalog_item_id) REFERENCES catalog_items(id) ON DELETE CASCADE,
+    INDEX idx_hotel_related_sort (hotel_id, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS vehicles (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     code VARCHAR(40) NOT NULL UNIQUE,
@@ -258,6 +317,29 @@ CREATE TABLE IF NOT EXISTS tour_template_prices (
     INDEX idx_template_prices (tour_template_id, active, sort_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS tour_hiking_details (
+    tour_template_id INT UNSIGNED PRIMARY KEY,
+    distance_km DECIMAL(7,2) NOT NULL DEFAULT 0,
+    elevation_gain_m SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    elevation_loss_m SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    min_elevation_m SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    max_elevation_m SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    moving_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    total_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    route_type_de VARCHAR(120) NOT NULL DEFAULT '',
+    route_type_en VARCHAR(120) NOT NULL DEFAULT '',
+    start_location_de VARCHAR(190) NOT NULL DEFAULT '',
+    start_location_en VARCHAR(190) NOT NULL DEFAULT '',
+    end_location_de VARCHAR(190) NOT NULL DEFAULT '',
+    end_location_en VARCHAR(190) NOT NULL DEFAULT '',
+    guide_required TINYINT(1) NOT NULL DEFAULT 1,
+    source_url VARCHAR(500) NOT NULL DEFAULT '',
+    notes_de TEXT NOT NULL,
+    notes_en TEXT NOT NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_hiking_details_tour FOREIGN KEY (tour_template_id) REFERENCES tour_templates(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS b2b_agents (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     agency_code VARCHAR(40) NOT NULL UNIQUE,
@@ -377,6 +459,10 @@ CREATE TABLE IF NOT EXISTS tour_request_items (
     item_id INT UNSIGNED NOT NULL,
     quantity SMALLINT UNSIGNED NOT NULL DEFAULT 1,
     room_count TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    room_type_id INT UNSIGNED NULL,
+    room_type_code VARCHAR(80) NOT NULL DEFAULT '',
+    room_type_name_de VARCHAR(190) NOT NULL DEFAULT '',
+    room_type_name_en VARCHAR(190) NOT NULL DEFAULT '',
     unit_price DECIMAL(10,2) NOT NULL DEFAULT 0,
     price_basis VARCHAR(30) NOT NULL DEFAULT 'per_person',
     line_total DECIMAL(10,2) NOT NULL DEFAULT 0,

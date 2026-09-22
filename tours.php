@@ -14,12 +14,16 @@ $stmt->execute($params);
 $tours = $stmt->fetchAll();
 
 $stopsByTour = [];
+$hikesByTour = [];
 if ($tours) {
     $ids = array_column($tours, 'id');
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
     $stopStmt = db()->prepare("SELECT s.tour_template_id,s.nights,d.name_de,d.name_en FROM tour_template_stops s JOIN destinations d ON d.id=s.destination_id WHERE s.tour_template_id IN ($placeholders) ORDER BY s.tour_template_id,s.sort_order,s.id");
     $stopStmt->execute($ids);
     foreach ($stopStmt->fetchAll() as $stop) $stopsByTour[(int)$stop['tour_template_id']][] = $stop;
+    $hikeStmt = db()->prepare("SELECT tour_template_id,distance_km,elevation_gain_m,total_minutes FROM tour_hiking_details WHERE tour_template_id IN ($placeholders)");
+    $hikeStmt->execute($ids);
+    foreach ($hikeStmt->fetchAll() as $hike) $hikesByTour[(int)$hike['tour_template_id']] = $hike;
 }
 $categoryLabels = [
     'winter'=>t('Winterurlaub','Winter holiday'),'summer'=>t('Sommerurlaub','Summer holiday'),
@@ -45,7 +49,7 @@ require __DIR__ . '/includes/public-header.php';
     <section class="tour-catalog-section">
         <?php if (!$tours): ?><div class="tour-empty"><h2><?= e(t('Noch keine Reise veröffentlicht.', 'No tour has been published yet.')) ?></h2></div><?php endif; ?>
         <div class="tour-card-grid">
-            <?php foreach ($tours as $tour): $stops=$stopsByTour[(int)$tour['id']]??[]; ?>
+            <?php foreach ($tours as $tour): $stops=$stopsByTour[(int)$tour['id']]??[]; $hike=$hikesByTour[(int)$tour['id']]??null; ?>
                 <article class="tour-card">
                     <a class="tour-card-image" href="<?= e(url('tour.php?slug='.urlencode($tour['slug']).'&lang='.lang())) ?>"<?= $tour['image_path']?' style="background-image:linear-gradient(180deg,rgba(8,39,31,.08),rgba(8,39,31,.7)),url('.e(url($tour['image_path'])).')"':'' ?>>
                         <span><?= e($categoryLabels[$tour['category']]??$tour['category']) ?></span>
@@ -56,6 +60,7 @@ require __DIR__ . '/includes/public-header.php';
                         <h2><a href="<?= e(url('tour.php?slug='.urlencode($tour['slug']).'&lang='.lang())) ?>"><?= e($tour['title_'.lang()]) ?></a></h2>
                         <span><?= e($tour['intro_'.lang()]) ?></span>
                         <ul class="tour-route-preview">
+                            <?php if ($hike): ?><li><?= e(number_format((float)$hike['distance_km'],2,lang()==='de'?',':'.','')) ?> km</li><li>+<?= (int)$hike['elevation_gain_m'] ?> m</li><li><?= e(t('Technisch moderat','Technically moderate')) ?></li><?php endif; ?>
                             <?php foreach (array_slice($stops,0,4) as $stop): ?><li><?= e($stop['name_'.lang()]) ?></li><?php endforeach; ?>
                             <?php if (count($stops)>4): ?><li>+<?= count($stops)-4 ?> <?= e(t('weitere','more')) ?></li><?php endif; ?>
                         </ul>

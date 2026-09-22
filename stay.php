@@ -18,18 +18,26 @@ $hotelStmt->execute([$countryCode]);
 $hotels = $hotelStmt->fetchAll();
 $hotelIds = array_map(static fn(array $hotel): int => (int)$hotel['id'], $hotels);
 $mealPlansByHotel = [];
+$roomTypesByHotel = [];
+$relatedByHotel = [];
 if ($hotelIds) {
     $placeholders = implode(',', array_fill(0, count($hotelIds), '?'));
     $mealStmt = db()->prepare("SELECT * FROM accommodation_meal_plans WHERE active=1 AND catalog_item_id IN ($placeholders) ORDER BY catalog_item_id,sort_order,id");
     $mealStmt->execute($hotelIds);
     foreach ($mealStmt->fetchAll() as $mealPlan) $mealPlansByHotel[(int)$mealPlan['catalog_item_id']][] = $mealPlan;
+    $roomStmt=db()->prepare("SELECT * FROM hotel_room_types WHERE active=1 AND hotel_id IN ($placeholders) ORDER BY hotel_id,featured DESC,sort_order,id");$roomStmt->execute($hotelIds);$roomRows=$roomStmt->fetchAll();
+    $roomIds=array_map(static fn(array $room):int=>(int)$room['id'],$roomRows);$ratesByRoom=[];
+    if($roomIds){$roomPlaceholders=implode(',',array_fill(0,count($roomIds),'?'));$rateStmt=db()->prepare("SELECT * FROM hotel_room_rates WHERE active=1 AND room_type_id IN ($roomPlaceholders) ORDER BY room_type_id,valid_from DESC,sort_order,id");$rateStmt->execute($roomIds);foreach($rateStmt->fetchAll() as $rate)$ratesByRoom[(int)$rate['room_type_id']][]=$rate;}
+    foreach($roomRows as $room){$room['rates']=$ratesByRoom[(int)$room['id']]??[];$roomTypesByHotel[(int)$room['hotel_id']][]=$room;}
+    $relatedStmt=db()->prepare("SELECT hotel_id,catalog_item_id FROM hotel_related_items WHERE hotel_id IN ($placeholders) ORDER BY sort_order,catalog_item_id");$relatedStmt->execute($hotelIds);foreach($relatedStmt->fetchAll() as $related)$relatedByHotel[(int)$related['hotel_id']][]=(int)$related['catalog_item_id'];
 }
 $serviceStmt = db()->prepare(
     "SELECT c.*,d.code AS destination_code,d.accent AS destination_accent,
             cc.name_de AS classification_de,cc.name_en AS classification_en
      FROM catalog_items c JOIN destinations d ON d.id=c.destination_id
      LEFT JOIN catalog_classifications cc ON cc.id=c.classification_id
-     WHERE c.type IN ('sight','activity','restaurant','spice_garden','shop','service') AND c.active=1 AND d.active=1 AND d.country_code=? AND c.$availabilityColumn=1
+     WHERE c.type IN ('sight','activity','restaurant','spice_garden','shop','service') AND c.active=1 AND d.active=1 AND d.country_code=?
+       AND (c.$availabilityColumn=1 OR EXISTS (SELECT 1 FROM hotel_related_items hri WHERE hri.catalog_item_id=c.id))
      ORDER BY c.destination_id,c.type,c.featured DESC,c.sort_order,c.name_de"
 );
 $serviceStmt->execute([$countryCode]);
@@ -59,7 +67,9 @@ $stayData = [
     'language'=>lang(),
     'type'=>$stayType,
     'initialHotelId'=>max(0,(int)($_GET['hotel']??0)),
-    'hotels'=>array_map(static function(array $hotel) use ($mealPlansByHotel): array {
+    'hotels'=>array_map(static function(array $hotel) use ($mealPlansByHotel,$roomTypesByHotel,$relatedByHotel): array {
+        $roomTypes=$roomTypesByHotel[(int)$hotel['id']]??[];
+        $rateFrom=$roomTypes?min(array_map(static fn(array $room):float=>(float)$room['base_rate_per_room_night'],$roomTypes)):(float)$hotel['price_per_person'];
         return [
             'id'=>(int)$hotel['id'],'destination_id'=>(int)$hotel['destination_id'],
             'name_de'=>$hotel['name_de'],'name_en'=>$hotel['name_en'],
@@ -71,7 +81,7 @@ $stayData = [
             'destination_name_de'=>$hotel['destination_name_de'],'destination_name_en'=>$hotel['destination_name_en'],
             'region_de'=>$hotel['region_de'],'region_en'=>$hotel['region_en'],
             'code'=>$hotel['destination_code'],'accent'=>$hotel['destination_accent'],
-            'rate'=>price_with_markup((float)$hotel['price_per_person']),
+            'rate'=>price_with_markup($rateFrom),
             'standard_guests'=>(int)$hotel['standard_room_guests'],
             'maximum_guests'=>(int)$hotel['max_guests_with_extra_bed'],
             'extra_bed_percent'=>(float)$hotel['extra_bed_percent'],
@@ -80,6 +90,15 @@ $stayData = [
             'night_options'=>array_values(array_filter(array_map('intval',explode(',',(string)$hotel['ayurveda_night_options'])),static fn(int $night): bool=>$night>0&&$night<=90)),
             'image'=>$hotel['image_path']?url($hotel['image_path']):'',
             'featured'=>(bool)$hotel['featured'],
+            'related_items'=>$relatedByHotel[(int)$hotel['id']]??[],
+            'room_types'=>array_map(static fn(array $room):array=>[
+                'id'=>(int)$room['id'],'code'=>$room['code'],'name_de'=>$room['name_de'],'name_en'=>$room['name_en'],
+                'description_de'=>$room['description_de'],'description_en'=>$room['description_en'],'bed_type_de'=>$room['bed_type_de'],'bed_type_en'=>$room['bed_type_en'],
+                'amenities_de'=>$room['amenities_de'],'amenities_en'=>$room['amenities_en'],'rate'=>price_with_markup((float)$room['base_rate_per_room_night']),
+                'standard_guests'=>(int)$room['standard_guests'],'maximum_guests'=>(int)$room['max_guests'],'extra_bed_percent'=>(float)$room['extra_bed_percent'],'child_percent'=>(float)$room['child_percent'],
+                'image'=>$room['image_path']?url($room['image_path']):'','featured'=>(bool)$room['featured'],
+                'rates'=>array_map(static fn(array $rate):array=>['label_de'=>$rate['label_de'],'label_en'=>$rate['label_en'],'from'=>$rate['valid_from'],'to'=>$rate['valid_to'],'rate'=>price_with_markup((float)$rate['price_per_room_night']),'minimum_nights'=>(int)$rate['minimum_nights']],$room['rates']),
+            ],$roomTypes),
             'meal_plans'=>array_map(static fn(array $plan): array=>[
                 'code'=>$plan['code'],'name_de'=>$plan['name_de'],'name_en'=>$plan['name_en'],
                 'supplement'=>price_with_markup((float)$plan['supplement_per_person_night']),
@@ -98,7 +117,7 @@ $stayData = [
     ],$services),
     'labels'=>[
         'chooseHotel'=>t('Hotel auswählen','Choose hotel'),'chosen'=>t('Ausgewählt','Selected'),
-        'perRoomNight'=>t('pro Doppelzimmer / Nacht','per double room / night'),
+        'perRoomNight'=>t('pro Zimmer / Nacht','per room / night'),'roomType'=>t('Zimmerkategorie','Room category'),
         'perPerson'=>t('pro Person','per person'),'perPersonNight'=>t('pro Person / Nacht','per person / night'),
         'perBooking'=>t('pro Buchung','per booking'),'included'=>t('Inklusive','Included'),
         'roomCost'=>t('Zimmer','Rooms'),'extraBedCost'=>t('Zusatzbetten','Extra beds'),
@@ -108,7 +127,7 @@ $stayData = [
         'child'=>t('Kind','child'),'children'=>t('Kinder','children'),
         'selectHotelFirst'=>t('Wählen Sie zuerst ein Hotel.','Choose a hotel first.'),
         'noServices'=>t('Für dieses Hotel sind noch keine Zusatzleistungen hinterlegt.','No additional services have been added for this hotel yet.'),
-        'occupancyError'=>t('Für diese Gästezahl benötigen Sie mehr Zimmer. Pro Doppelzimmer sind maximal drei Gäste inklusive Zusatzbett möglich.','More rooms are required for this number of guests. A double room accommodates up to three guests including an extra bed.'),
+        'occupancyError'=>t('Für diese Gästezahl benötigen Sie mehr Zimmer. Bitte beachten Sie die maximale Belegung der gewählten Zimmerkategorie.','More rooms are required for this number of guests. Please observe the maximum occupancy of the selected room category.'),
         'pricingRule'=>t('Zimmerpreis × Zimmer × Nächte. %g Standardgäste pro Zimmer; Zusatzbett +%e %. Kinder bis %a Jahre zahlen %c % des entsprechenden Erwachsenen-Zuschlags.','Room rate × rooms × nights. %g standard guests per room; extra bed +%e%. Children up to age %a pay %c% of the corresponding adult supplement.'),
         'allInclusiveRequired'=>t('Ayurveda-Aufenthalte beinhalten verpflichtend All-inclusive.','Ayurveda retreats require all-inclusive.'),
         'typeSight'=>t('Ausflüge','Excursions'),'typeActivity'=>t('Aktivitäten','Activities'),
@@ -140,6 +159,7 @@ $stayData = [
         <input type="hidden" name="request_type" value="<?= e($stayType) ?>">
         <input type="hidden" name="mode" value="<?= $isAdminMode?'admin':'customer' ?>">
         <input type="hidden" name="hotel_id" data-hotel-input value="">
+        <input type="hidden" name="room_type_id" data-room-type-input value="">
         <input type="hidden" name="services_json" data-services-input value="[]">
         <input type="hidden" name="estimate" data-estimate-input value="0">
 
@@ -152,7 +172,7 @@ $stayData = [
                         <label><?= e(t('Anreise','Arrival')) ?><input type="date" name="start_date" min="<?= date('Y-m-d') ?>"></label>
                         <label><?= e(t('Erwachsene','Adults')) ?><select name="adults" data-adults><?php for($i=1;$i<=20;$i++):?><option value="<?= $i ?>"<?= selected($i,2) ?>><?= $i ?></option><?php endfor;?></select></label>
                         <label><?= e(t('Kinder bis 12 Jahre','Children up to 12')) ?><select name="children" data-children><?php for($i=0;$i<=10;$i++):?><option value="<?= $i ?>"><?= $i ?></option><?php endfor;?></select><small><?= e(t('Ältere Kinder bitte als Erwachsene zählen.','Count older children as adults.')) ?></small></label>
-                        <label><?= e(t('Doppelzimmer','Double rooms')) ?><select name="rooms" data-rooms><?php for($i=1;$i<=10;$i++):?><option value="<?= $i ?>"><?= $i ?></option><?php endfor;?></select></label>
+                        <label><?= e(t('Anzahl Zimmer','Number of rooms')) ?><select name="rooms" data-rooms><?php for($i=1;$i<=10;$i++):?><option value="<?= $i ?>"><?= $i ?></option><?php endfor;?></select></label>
                         <label><?= e(t('Aufenthaltsdauer','Length of stay')) ?><select name="nights" data-nights></select></label>
                         <label><?= e($stayType==='maldives'?t('Atoll','Atoll'):t('Region / Ort','Region / place')) ?><select data-destination-filter><option value="0"><?= e($stayType==='maldives'?t('Alle Atolle','All atolls'):t('Alle Orte','All destinations')) ?></option><?php foreach($destinations as $destination):?><option value="<?= (int)$destination['id'] ?>"><?= e($destination['name_'.lang()]) ?></option><?php endforeach;?></select></label>
                     </div>
@@ -165,13 +185,18 @@ $stayData = [
                     <p class="stay-pricing-rule" data-pricing-rule></p>
                 </section>
 
+                <section class="stay-card" data-room-section hidden>
+                    <div class="stay-section-head"><span>03</span><div><p><?= e(t('ZIMMERKATEGORIE','ROOM CATEGORY')) ?></p><h2><?= e(t('Wählen Sie die gewünschte Zimmerart.','Choose your preferred room type.')) ?></h2></div></div>
+                    <label class="stay-meal-field"><?= e(t('Zimmerkategorie','Room category')) ?><select data-room-type></select><small data-room-note></small></label>
+                </section>
+
                 <section class="stay-card" data-meal-section hidden>
-                    <div class="stay-section-head"><span>03</span><div><p><?= e(t('VERPFLEGUNG','MEAL PLAN')) ?></p><h2><?= e($stayType==='ayurveda'?t('All-inclusive ist enthalten.','All-inclusive is required.'):t('Wählen Sie Ihre Verpflegung.','Choose your meal plan.')) ?></h2></div></div>
+                    <div class="stay-section-head"><span>04</span><div><p><?= e(t('VERPFLEGUNG','MEAL PLAN')) ?></p><h2><?= e($stayType==='ayurveda'?t('All-inclusive ist enthalten.','All-inclusive is required.'):t('Wählen Sie Ihre Verpflegung.','Choose your meal plan.')) ?></h2></div></div>
                     <label class="stay-meal-field"><?= e(t('Verpflegungsart','Meal plan')) ?><select name="meal_plan_code" data-meal-plan></select><small data-meal-note></small></label>
                 </section>
 
                 <section class="stay-card">
-                    <div class="stay-section-head"><span>04</span><div><p><?= e(t('OPTIONAL','OPTIONAL')) ?></p><h2><?= e(t('Zusätzliche Leistungen auswählen.','Choose additional services.')) ?></h2></div></div>
+                    <div class="stay-section-head"><span>05</span><div><p><?= e(t('OPTIONAL','OPTIONAL')) ?></p><h2><?= e(t('Zusätzliche Leistungen auswählen.','Choose additional services.')) ?></h2></div></div>
                     <nav class="stay-service-tabs" data-service-tabs>
                         <button type="button" data-service-type="service" class="active"><?= e(t('Leistungen','Services')) ?></button>
                         <button type="button" data-service-type="sight"><?= e(t('Ausflüge','Excursions')) ?></button>

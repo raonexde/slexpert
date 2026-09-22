@@ -30,17 +30,21 @@
 
 Die Datenbank, Tabellen und ersten Beispielinhalte werden automatisch erstellt.
 
-Version 12.5.2 verwendet **Sri Lanka Expert by Raonex GmbH** als Standardmarke. Firmenadresse, Telefon, E-Mail, Website und Social-Media-Links können danach unter **Admin → Einstellungen** bearbeitet werden. Nicht ausgefüllte Social-Media-Links werden im Footer nicht angezeigt.
+Version 12.6 verwendet **Sri Lanka Expert by Raonex GmbH** als Standardmarke. Firmenadresse, Telefon, E-Mail, Website und Social-Media-Links können danach unter **Admin → Einstellungen** bearbeitet werden. Nicht ausgefüllte Social-Media-Links werden im Footer nicht angezeigt.
 
-## Aktualisierung auf Version 12.5.2
+## Aktualisierung auf Version 12.7
 
 1. Datenbank sowie die Ordner `uploads` und `storage` sichern.
-2. Die Dateien aus Version 12.5.2 über die bisherigen Programmdateien kopieren. Vorhandene `config.local.php`, Uploads und gespeicherte Dokumente nicht löschen.
-3. Eine beliebige Seite öffnen. Die Migration `017_catalog_classifications_and_mobile.php` wird automatisch einmal ausgeführt. Sie ergänzt Klassifizierungen und neue Katalogfelder, ohne vorhandene Reisebausteine oder Preise zu ersetzen.
+2. Die Dateien aus Version 12.7 über die bisherigen Programmdateien kopieren. Vorhandene `config.local.php`, Uploads und gespeicherte Dokumente nicht löschen.
+3. Eine beliebige Seite öffnen. Die Migration `018_knuckles_hiking_itinerary.php` wird automatisch einmal ausgeführt. Sie ergänzt die Wanderfelder, die Knuckles-Wanderreise und eine zugehörige Aktivität, ohne vorhandene eigene Reisevorlagen zu ersetzen.
 4. Unter **Admin → Fahrzeugflotte** Fahrzeugbilder ergänzen.
 5. Unter **Admin → Reiseleiter** eingegangene Registrierungen prüfen. Ein Profil wird nur im Planer angezeigt, wenn der Status **Freigegeben** und die Checkbox **Aktiv** gesetzt sind.
 
-Version 12.5.2 hängt automatisch den Änderungszeitpunkt an lokale CSS- und JavaScript-Dateien an. Dadurch lädt der Browser nach einem Update die neue Gestaltung und verwendet nicht weiterhin eine alte, zwischengespeicherte Datei.
+Version 12.7 führt beim ersten Seitenaufruf automatisch die Hotel-Migration aus. Jedes vorhandene Hotel erhält eine erste editierbare Zimmerkategorie „Doppelzimmer“ mit dem bisherigen Zimmerpreis. Eigene Hotels, Preise, Bilder, Anfragen und Buchungen bleiben erhalten. Danach steht **Admin → Hotelverwaltung** zur Verfügung.
+
+Lokale CSS- und JavaScript-Dateien erhalten automatisch einen Änderungszeitpunkt. Dadurch lädt der Browser nach einem Update die neue Version und verwendet keine alte, zwischengespeicherte Datei.
+
+Die neue Wanderreise finden Sie unter **Reiseideen → Sport & Abenteuer**. Alle Streckendaten, Texte, Preise, Übernachtungen, Hotels und eingeschlossenen Leistungen können unter **Admin → Fertige Reisen** bearbeitet werden. Die öffentlich angezeigten Werte sind eine Planungsreferenz; Wetter, Wegzustand, Zugänglichkeit, Genehmigungen und Transferpunkte müssen vor einer Buchungsbestätigung aktuell geprüft werden.
 
 Unter **Admin → Kategorien** können Unterkunftsarten und Unterkategorien für Sehenswürdigkeiten, Aktivitätszentren, Restaurants, Gewürzgärten, Shops und Zusatzleistungen jederzeit ergänzt, übersetzt, sortiert oder deaktiviert werden. Unter **Admin → Reisebausteine** besitzt jedes Angebot zusätzlich Klassifizierung, Sterne, Verkaufssegment, Ausstattung, Öffnungszeiten, Reservierungspflicht und interne Lieferantenfelder.
 

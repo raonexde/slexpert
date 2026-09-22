@@ -19,6 +19,15 @@ $mealPlanRows = db()->query(
 )->fetchAll();
 $mealPlansByItem = [];
 foreach ($mealPlanRows as $mealPlan) $mealPlansByItem[(int)$mealPlan['catalog_item_id']][] = $mealPlan;
+$roomRows = db()->query("SELECT r.* FROM hotel_room_types r JOIN catalog_items c ON c.id=r.hotel_id WHERE r.active=1 AND c.active=1 ORDER BY r.hotel_id,r.featured DESC,r.sort_order,r.id")->fetchAll();
+$roomRates = db()->query("SELECT rr.* FROM hotel_room_rates rr JOIN hotel_room_types r ON r.id=rr.room_type_id WHERE rr.active=1 AND r.active=1 ORDER BY rr.room_type_id,rr.valid_from DESC,rr.sort_order,rr.id")->fetchAll();
+$ratesByRoom = [];
+foreach ($roomRates as $rate) $ratesByRoom[(int)$rate['room_type_id']][] = $rate;
+$roomTypesByItem = [];
+foreach ($roomRows as $room) {
+    $room['rates'] = $ratesByRoom[(int)$room['id']] ?? [];
+    $roomTypesByItem[(int)$room['hotel_id']][] = $room;
+}
 $vehicles = db()->query('SELECT * FROM vehicles WHERE active = 1 ORDER BY capacity, sort_order, id')->fetchAll();
 $guides = db()->query("SELECT id,display_name,languages,specializations,driver_guide,daily_rate,photo_path FROM guides WHERE status='approved' AND active=1 ORDER BY featured DESC,sort_order,display_name")->fetchAll();
 $settings = db()->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('google_maps_api_key', 'google_maps_map_id')")->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -85,7 +94,9 @@ $plannerData = [
             'google_place_id' => $row['google_place_id'] ?? '',
         ];
     }, $destinations),
-    'items' => array_map(static function (array $row) use ($mealPlansByItem): array {
+    'items' => array_map(static function (array $row) use ($mealPlansByItem,$roomTypesByItem): array {
+        $roomTypes = $roomTypesByItem[(int)$row['id']] ?? [];
+        $hotelRate = $roomTypes ? min(array_map(static fn(array $room): float => (float)$room['base_rate_per_room_night'], $roomTypes)) : (float)$row['price_per_person'];
         return [
             'id' => (int)$row['id'], 'destination_id' => (int)$row['destination_id'],
             'type' => $row['type'], 'name_de' => $row['name_de'], 'name_en' => $row['name_en'],
@@ -96,13 +107,26 @@ $plannerData = [
             'facilities_de' => $row['facilities_de'], 'facilities_en' => $row['facilities_en'],
             'opening_hours_de' => $row['opening_hours_de'], 'opening_hours_en' => $row['opening_hours_en'],
             'duration_minutes' => (int)$row['duration_minutes'], 'booking_required' => (bool)$row['booking_required'],
-            'price' => price_with_markup((float)$row['price_per_person']), 'price_basis'=>$row['price_basis'], 'featured' => (bool)$row['featured'],
+            'price' => price_with_markup($row['type']==='accommodation'?$hotelRate:(float)$row['price_per_person']), 'price_basis'=>$row['price_basis'], 'featured' => (bool)$row['featured'],
             'code' => $row['destination_code'], 'accent' => $row['destination_accent'],
             'image' => $row['image_path'] ? url($row['image_path']) : '',
             'meal_plans' => array_map(static fn(array $plan): array => [
                 'code'=>$plan['code'],'name_de'=>$plan['name_de'],'name_en'=>$plan['name_en'],
                 'supplement'=>price_with_markup((float)$plan['supplement_per_person_night']),
             ], $mealPlansByItem[(int)$row['id']] ?? []),
+            'room_types' => array_map(static fn(array $room): array => [
+                'id'=>(int)$room['id'],'code'=>$room['code'],'name_de'=>$room['name_de'],'name_en'=>$room['name_en'],
+                'description_de'=>$room['description_de'],'description_en'=>$room['description_en'],
+                'bed_type_de'=>$room['bed_type_de'],'bed_type_en'=>$room['bed_type_en'],
+                'amenities_de'=>$room['amenities_de'],'amenities_en'=>$room['amenities_en'],
+                'rate'=>price_with_markup((float)$room['base_rate_per_room_night']),
+                'standard_guests'=>(int)$room['standard_guests'],'max_guests'=>(int)$room['max_guests'],
+                'image'=>$room['image_path']?url($room['image_path']):'','featured'=>(bool)$room['featured'],
+                'rates'=>array_map(static fn(array $rate): array => [
+                    'label_de'=>$rate['label_de'],'label_en'=>$rate['label_en'],'from'=>$rate['valid_from'],'to'=>$rate['valid_to'],
+                    'rate'=>price_with_markup((float)$rate['price_per_room_night']),'minimum_nights'=>(int)$rate['minimum_nights'],
+                ],$room['rates']),
+            ],$roomTypes),
         ];
     }, $items),
     'maps' => [
@@ -159,7 +183,8 @@ $plannerData = [
         'room' => t('Zimmer', 'room'),
         'rooms' => t('Zimmer', 'rooms'),
         'roomSelection' => t('Anzahl Doppelzimmer', 'Number of double rooms'),
-        'doubleRoomNotice' => t('Standardbelegung: maximal 2 Reisende pro Zimmer', 'Standard occupancy: maximum 2 travellers per room'),
+        'roomType' => t('Zimmerkategorie', 'Room category'),
+        'doubleRoomNotice' => t('Der Zimmerpreis gilt pro Zimmer und Nacht.', 'The room rate applies per room and night.'),
         'perRoomNight' => t('Zimmer / Nacht', 'room / night'),
         'perPerson' => t('pro Person', 'per person'),
         'perPersonNightService' => t('pro Person / Nacht','per person / night'),
