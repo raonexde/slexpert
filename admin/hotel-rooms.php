@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('hotels', request_is_post());
 $hotelId=max(0,(int)($_GET['hotel_id']??$_POST['hotel_id']??0));
 $hotelStmt=db()->prepare("SELECT c.*,d.name_de AS destination_name FROM catalog_items c JOIN destinations d ON d.id=c.destination_id WHERE c.id=? AND c.type='accommodation'");
 $hotelStmt->execute([$hotelId]);$hotel=$hotelStmt->fetch();

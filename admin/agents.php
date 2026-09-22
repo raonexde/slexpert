@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('agents');
 $query=trim((string)($_GET['q']??''));$active=($_GET['active']??'')==='0'?'0':(($_GET['active']??'')==='1'?'1':'');
 $sql="SELECT a.*,u.id AS user_id,u.last_login_at,
       (SELECT COUNT(*) FROM tour_requests r WHERE r.b2b_agent_id=a.id) request_count,

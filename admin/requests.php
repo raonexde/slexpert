@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('requests');
 
 $status = in_array($_GET['status'] ?? '', ['new','contacted','quoted','confirmed','cancelled','archived'], true) ? $_GET['status'] : '';
 $query = trim((string)($_GET['q'] ?? ''));

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('vehicles', request_is_post());
 
 $id = max(0, (int)($_GET['id'] ?? 0));
 

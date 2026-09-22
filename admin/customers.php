@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';require_admin();
+require_admin_permission('customers');
 $query=trim((string)($_GET['q']??''));$active=($_GET['active']??'')==='0'?'0':(($_GET['active']??'')==='1'?'1':'');
 $sql="SELECT u.*,
       (SELECT COUNT(*) FROM tour_requests r WHERE r.customer_user_id=u.id) request_count,

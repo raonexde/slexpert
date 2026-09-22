@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('agents', request_is_post());
 $id=max(0,(int)($_GET['id']??0));
 $defaults=['agency_code'=>'','company_name'=>'','contact_name'=>'','email'=>'','phone'=>'','address'=>'','country'=>'','tax_id'=>'','commission_percent'=>'10','notes'=>'','active'=>1];
 $agent=$defaults;$portalUser=null;

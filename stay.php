@@ -51,7 +51,9 @@ foreach ($hotels as $hotel) {
         'region_de'=>$hotel['region_de'],'region_en'=>$hotel['region_en'],
     ];
 }
-$isAdminMode = (($_GET['mode'] ?? '') === 'admin') && admin_user();
+$adminModeRequested = (($_GET['mode'] ?? '') === 'admin');
+if ($adminModeRequested) require_admin_permission('planner', true);
+$isAdminMode = $adminModeRequested;
 $portalFormUser = portal_user();
 $customerFormUser = $portalFormUser && $portalFormUser['user_type'] === 'customer' ? $portalFormUser : null;
 $pageTitle = match ($stayType) {

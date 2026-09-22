@@ -1,13 +1,14 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('requests', request_is_post());
 $id = (int)($_GET['id'] ?? 0);
 
 if (request_is_post()) {
     verify_csrf();
     $action = (string)($_POST['action'] ?? 'status');
     if ($action === 'convert_booking') {
+        require_admin_permission('bookings', true);
         $sourceStmt = db()->prepare('SELECT * FROM tour_requests WHERE id=?');
         $sourceStmt->execute([$id]);
         $sourceRequest = $sourceStmt->fetch();

@@ -6,7 +6,7 @@ $reference = trim((string)($_GET['ref'] ?? ''));
 $stmt = db()->prepare('SELECT r.*,b.booking_reference FROM tour_requests r LEFT JOIN bookings b ON b.request_id=r.id WHERE r.reference=?');
 $stmt->execute([$reference]);
 $request = $stmt->fetch();
-$isAdmin = (bool)admin_user();
+$isAdmin = admin_can('requests');
 $isCustomerSession = $reference !== '' && hash_equals((string)($_SESSION['submitted_reference'] ?? ''), $reference);
 $isPortalAccess = $request ? portal_can_access_request($request) : false;
 if (!$request || (!$isAdmin && !$isCustomerSession && !$isPortalAccess)) {

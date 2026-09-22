@@ -32,7 +32,9 @@ $vehicles = db()->query('SELECT * FROM vehicles WHERE active = 1 ORDER BY capaci
 $guides = db()->query("SELECT id,display_name,languages,specializations,driver_guide,daily_rate,photo_path FROM guides WHERE status='approved' AND active=1 ORDER BY featured DESC,sort_order,display_name")->fetchAll();
 $settings = db()->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('google_maps_api_key', 'google_maps_map_id')")->fetchAll(PDO::FETCH_KEY_PAIR);
 
-$isAdminMode = (($_GET['mode'] ?? '') === 'admin') && admin_user();
+$adminModeRequested = (($_GET['mode'] ?? '') === 'admin');
+if ($adminModeRequested) require_admin_permission('planner', true);
+$isAdminMode = $adminModeRequested;
 $portalFormUser = portal_user();
 $customerFormUser = $portalFormUser && $portalFormUser['user_type'] === 'customer' ? $portalFormUser : null;
 $requestedTourId = max(0, (int)($_GET['tour'] ?? 0));

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('guides');
 $id=max(1,(int)($_GET['id']??0));$type=(string)($_GET['type']??'');
 $columns=['license'=>'license_document_path','identity'=>'identity_document_path','insurance'=>'insurance_document_path'];
 if(!isset($columns[$type])){http_response_code(404);exit('Document not found');}

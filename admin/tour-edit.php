@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('tours', request_is_post());
 
 $id = max(0, (int)($_GET['id'] ?? $_POST['id'] ?? 0));
 $duplicateId = $id === 0 ? max(0, (int)($_GET['duplicate'] ?? 0)) : 0;

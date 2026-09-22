@@ -4,7 +4,7 @@ require __DIR__ . '/includes/bootstrap.php';
 
 $slug = substr(trim((string)($_GET['slug'] ?? '')), 0, 160);
 $stmt = db()->prepare('SELECT * FROM tour_templates WHERE slug=? AND (active=1 OR ?=1) LIMIT 1');
-$stmt->execute([$slug, admin_user() ? 1 : 0]);
+$stmt->execute([$slug, admin_can('tours') ? 1 : 0]);
 $tour = $stmt->fetch();
 if (!$tour) { http_response_code(404); $pageTitle=t('Reise nicht gefunden','Tour not found'); require __DIR__.'/includes/public-header.php'; echo '<main class="success-page"><section class="success-card"><h1>'.e($pageTitle).'</h1><a class="button button-dark" href="'.e(url('tours.php?lang='.lang())).'">'.e(t('Zu den Reisen','View tours')).'</a></section></main>'; require __DIR__.'/includes/public-footer.php'; exit; }
 

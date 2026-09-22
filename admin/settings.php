@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('settings', request_is_post());
 
 $defaults = [
     'site_name' => 'Sri Lanka Expert',

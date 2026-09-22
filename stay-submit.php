@@ -21,7 +21,9 @@ $nights = max(1, min(90, (int)($_POST['nights'] ?? ($requestType === 'ayurveda' 
 $startDate = trim((string)($_POST['start_date'] ?? '')) ?: null;
 $mealPlanCode = substr(trim((string)($_POST['meal_plan_code'] ?? '')), 0, 40);
 $submittedServices = json_decode((string)($_POST['services_json'] ?? '[]'), true);
-$isAdminMode = ($_POST['mode'] ?? '') === 'admin' && admin_user();
+$adminModeRequested = ($_POST['mode'] ?? '') === 'admin';
+if ($adminModeRequested) require_admin_permission('planner', true);
+$isAdminMode = $adminModeRequested;
 $portalOwner = $isAdminMode ? null : portal_user();
 $customerUserId = $portalOwner && $portalOwner['user_type'] === 'customer' ? (int)$portalOwner['id'] : null;
 $b2bAgentId = $portalOwner && $portalOwner['user_type'] === 'agent' ? (int)$portalOwner['b2b_agent_id'] : null;
@@ -163,7 +165,8 @@ try {
     $_SESSION['submitted_reference'] = $reference;
     if ($isAdminMode) {
         flash('success',t('Der Hotelaufenthalt wurde gespeichert.','The hotel stay was saved.'));
-        redirect('admin/request.php?id='.$requestId);
+        if(admin_can('requests'))redirect('admin/request.php?id='.$requestId);
+        redirect('stay-proposal.php?ref='.urlencode($reference));
     }
     redirect('success.php?ref='.urlencode($reference).'&lang='.$language);
 } catch (Throwable $exception) {

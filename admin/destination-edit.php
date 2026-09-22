@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('catalog', request_is_post());
 $id = (int)($_GET['id'] ?? 0);
 $returnTo = (string)($_POST['return_to'] ?? $_GET['return_to'] ?? '');
 $returnTo = !$id && $returnTo === 'item-edit' ? 'item-edit' : '';

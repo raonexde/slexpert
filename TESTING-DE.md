@@ -1,10 +1,23 @@
-# Testanleitung Version 12.7
+# Testanleitung Version 12.8
 
 ## Bestehende lokale Installation aktualisieren
 
 1. MySQL/MariaDB muss in XAMPP grün laufen.
 2. Datenbank und den bisherigen Websiteordner sichern.
-3. Die Dateien aus Version 12.7 über die bisherigen Website-Dateien kopieren.
+3. Die Dateien aus Version 12.8 über die bisherigen Website-Dateien kopieren.
+
+## Benutzer- und Rechteverwaltung
+
+1. Mit dem bisherigen Admin anmelden. **Benutzer & Rechte** muss im Menü sichtbar sein und der Zugang muss als Hauptadministrator angezeigt werden.
+2. Einen neuen Bereichsbenutzer mit mindestens zehn Zeichen langem Passwort anlegen.
+3. Für **Hotelverwaltung** nur „Ansehen“, für **Reiseanfragen** „Ansehen“ und „Bearbeiten“ vergeben; alle anderen Bereiche abwählen.
+4. Als neuer Benutzer anmelden. Im Menü dürfen nur Übersicht, Reiseanfragen und Hotelverwaltung erscheinen.
+5. Hotelverwaltung öffnen. Die Nur-Lese-Meldung muss sichtbar sein; POST-Formulare müssen deaktiviert sein. Ein direkter POST-Versuch muss serverseitig abgewiesen werden.
+6. Reiseanfrage öffnen, Status ändern und speichern. Das muss mit dem Bearbeitungsrecht funktionieren.
+7. Eine nicht erlaubte URL wie `/admin/settings.php` direkt öffnen. Die Seite muss den Zugriff verweigern und zur Übersicht zurückführen.
+8. Als Hauptadministrator das Hotelrecht auf „Bearbeiten“ erweitern und erneut testen.
+9. Den Bereichsbenutzer deaktivieren. Eine erneute Anmeldung muss unmöglich sein; eine laufende Sitzung muss beim nächsten Aufruf beendet werden.
+10. Prüfen, dass der eigene beziehungsweise letzte aktive Hauptadministrator weder deaktiviert noch herabgestuft werden kann.
 
 ## Hotelverwaltung und Zimmerkategorien
 

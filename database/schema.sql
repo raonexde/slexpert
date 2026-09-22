@@ -4,9 +4,20 @@ CREATE TABLE IF NOT EXISTS admin_users (
     email VARCHAR(190) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('admin','editor') NOT NULL DEFAULT 'admin',
+    is_super_admin TINYINT(1) NOT NULL DEFAULT 0,
     active TINYINT(1) NOT NULL DEFAULT 1,
     last_login_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS admin_user_permissions (
+    admin_user_id INT UNSIGNED NOT NULL,
+    module_key VARCHAR(50) NOT NULL,
+    can_view TINYINT(1) NOT NULL DEFAULT 0,
+    can_manage TINYINT(1) NOT NULL DEFAULT 0,
+    PRIMARY KEY (admin_user_id, module_key),
+    CONSTRAINT fk_admin_permission_user FOREIGN KEY (admin_user_id) REFERENCES admin_users(id) ON DELETE CASCADE,
+    INDEX idx_admin_permission_module (module_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS destinations (

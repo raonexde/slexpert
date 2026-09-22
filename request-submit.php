@@ -23,7 +23,9 @@ $routeDistanceKm = max(0, min(5000, round((float)($_POST['route_distance_km'] ??
 $routeDurationMinutes = max(0, min(20000, (int)($_POST['route_duration_minutes'] ?? 0)));
 $destinations = json_decode((string)($_POST['destinations_json'] ?? '[]'), true);
 $submittedItems = json_decode((string)($_POST['items_json'] ?? '[]'), true);
-$isAdminMode = ($_POST['mode'] ?? '') === 'admin' && admin_user();
+$adminModeRequested = ($_POST['mode'] ?? '') === 'admin';
+if ($adminModeRequested) require_admin_permission('planner', true);
+$isAdminMode = $adminModeRequested;
 $sourceTourTemplateId = max(0, (int)($_POST['source_tour_template_id'] ?? 0));
 $priceMarkupPercent = price_markup_percent();
 $portalOwner = $isAdminMode ? null : portal_user();
@@ -331,7 +333,8 @@ try {
     $_SESSION['submitted_reference'] = $reference;
     if ($isAdminMode) {
         flash('success', t('Die Kundenreise wurde gespeichert.', 'The client journey was saved.'));
-        redirect('admin/request.php?id=' . $requestId);
+        if (admin_can('requests')) redirect('admin/request.php?id=' . $requestId);
+        redirect('itinerary.php?ref=' . urlencode($reference));
     }
     redirect('success.php?ref=' . urlencode($reference) . '&lang=' . $language);
 } catch (Throwable $exception) {

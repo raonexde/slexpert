@@ -1,4 +1,4 @@
-# Sri Lanka Expert · Version 12.7
+# Sri Lanka Expert · Version 12.8
 
 Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/MariaDB 10.4+.
 
@@ -177,8 +177,11 @@ Do not commit or publicly share config.local.php.
 - B2B agencies: /admin/agents.php
 - Destinations and content: /admin/catalog.php
 - Hotels, room categories and seasonal prices: /admin/hotels.php
+- Content classifications: /admin/classifications.php
 - Vehicle fleet: /admin/vehicles.php
+- Tour guides: /admin/guides.php
 - Website, company, social-media and Google Maps settings: /admin/settings.php
+- Admin users and section permissions (main administrators only): /admin/users.php
 - Customer journey builder: /plan.php?mode=admin
 - Beach-stay builder: /stay.php?type=beach&mode=admin
 - Ayurveda-stay builder: /stay.php?type=ayurveda&mode=admin
@@ -192,6 +195,8 @@ Ready-made routes are managed under **Admin → Ready-made tours**. Each templat
 Version 12.6 adds a dedicated hiking profile to ready-made tours. The included **Knuckles Hiking: Hunnas Falls, Sembuwatta Lake & One Tree Hill** template contains editable distance, ascent, descent, elevation range, moving time, total time, start, finish, route type, guide requirement, safety notes and source URL. These facts appear on the public tour page and its print/PDF version. Hiking maps show the relevant region instead of calculating a misleading driving route; the exact recorded GPS track remains linked to its source. The hike is also inserted as an editable activity so it remains visible after a customer copies the template into the tailor-made planner.
 
 Version 12.7 adds **Admin → Hotel Management**. Existing accommodation entries remain intact and receive an editable Double room category using their previous per-room/night price. Administrators can add any number of room categories, room images, occupancy rules, inventory, seasonal prices and minimum stays. A hotel can be linked to specific local services. Unused records can be deleted; hotels or rooms referenced by enquiries or tours are archived to preserve historical documents. The selected room category and price are validated by the server, stored as a snapshot and printed on the itinerary or hotel proposal.
+
+Version 12.8 adds **Admin → Benutzer & Rechte**. Main administrators have unrestricted access and can create staff accounts, reset passwords, activate or deactivate users and assign separate **view** and **manage** rights for each administration section. Permissions are enforced on the server as well as in the menu and dashboard. View-only users can inspect a section but its write forms are disabled and POST actions are rejected. Existing admin accounts are promoted automatically during the one-time upgrade so the update cannot lock out the current administrator. User management itself is intentionally limited to main administrators, and the last active main administrator cannot be deactivated or demoted.
 
 Each accommodation can be enabled for Beach Vacation, Ayurveda stays, Maldives stays, or any combination. The same edit form controls standard occupancy, maximum occupancy with an extra bed, the adult extra-bed percentage, child percentage, child age limit and allowed Ayurveda night packages. Sights, activities, shops and Additional Services can also be enabled separately for each single-hotel area.
 

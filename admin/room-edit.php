@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__).'/includes/bootstrap.php';
-require_admin();
+require_admin_permission('hotels', request_is_post());
 $id=max(0,(int)($_GET['id']??$_POST['id']??0));
 $room=['id'=>0,'hotel_id'=>max(0,(int)($_GET['hotel_id']??$_POST['hotel_id']??0)),'code'=>'','name_de'=>'','name_en'=>'','description_de'=>'','description_en'=>'','bed_type_de'=>'','bed_type_en'=>'','amenities_de'=>'','amenities_en'=>'','base_rate_per_room_night'=>0,'standard_guests'=>2,'max_guests'=>3,'extra_bed_allowed'=>1,'extra_bed_percent'=>30,'child_percent'=>50,'room_size_sqm'=>0,'inventory'=>0,'image_path'=>'','featured'=>0,'active'=>1,'sort_order'=>10];
 if($id){$stmt=db()->prepare('SELECT * FROM hotel_room_types WHERE id=?');$stmt->execute([$id]);$loaded=$stmt->fetch();if(!$loaded){flash('error','Zimmerkategorie wurde nicht gefunden.');redirect('admin/hotels.php');}$room=$loaded;}

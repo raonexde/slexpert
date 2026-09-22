@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require dirname(__DIR__) . '/includes/bootstrap.php';require_admin();$id=max(0,(int)($_GET['id']??0));
+require dirname(__DIR__) . '/includes/bootstrap.php';require_admin();require_admin_permission('bookings',request_is_post());$id=max(0,(int)($_GET['id']??0));
 $loadBooking=static function(int $id):array{$stmt=db()->prepare('SELECT b.*,r.reference,r.request_type,r.customer_name,r.customer_email,r.customer_phone,r.travelers,r.duration,r.hotel_name_de,a.company_name,a.agency_code FROM bookings b JOIN tour_requests r ON r.id=b.request_id LEFT JOIN b2b_agents a ON a.id=b.b2b_agent_id WHERE b.id=?');$stmt->execute([$id]);return $stmt->fetch()?:[];};$booking=$loadBooking($id);if(!$booking){http_response_code(404);exit('Booking not found');}
 if(request_is_post()){
  verify_csrf();$action=(string)($_POST['action']??'save');$pdo=db();try{

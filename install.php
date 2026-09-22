@@ -74,7 +74,7 @@ if (!$alreadyInstalled && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             }
 
             $pdo->beginTransaction();
-            $admin = $pdo->prepare('INSERT INTO admin_users (name, email, password_hash) VALUES (?, ?, ?)');
+            $admin = $pdo->prepare('INSERT INTO admin_users (name, email, password_hash, role, is_super_admin) VALUES (?, ?, ?, \'admin\', 1)');
             $admin->execute([
                 trim((string)$values['admin_name']),
                 strtolower(trim((string)$values['admin_email'])),

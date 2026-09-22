@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('guides', request_is_post());
 $id=max(0,(int)($_GET['id']??$_POST['id']??0));
 $guide=['id'=>0,'guide_code'=>'','status'=>'pending','first_name'=>'','last_name'=>'','display_name'=>'','email'=>'','phone'=>'','whatsapp'=>'','date_of_birth'=>'','gender'=>'','nationality'=>'','address'=>'','city'=>'','district'=>'','country'=>'Sri Lanka','nic_passport'=>'','license_number'=>'','license_type'=>'','license_expiry'=>'','tourism_registration'=>'','years_experience'=>0,'languages'=>'','service_regions'=>'','specializations'=>'','driver_guide'=>0,'daily_rate'=>0,'bio_de'=>'','bio_en'=>'','emergency_name'=>'','emergency_phone'=>'','photo_path'=>'','license_document_path'=>'','identity_document_path'=>'','insurance_document_path'=>'','admin_notes'=>'','active'=>0,'featured'=>0,'sort_order'=>100];
 if($id){$stmt=db()->prepare('SELECT * FROM guides WHERE id=?');$stmt->execute([$id]);$loaded=$stmt->fetch();if(!$loaded){http_response_code(404);exit('Guide not found');}$guide=$loaded;}

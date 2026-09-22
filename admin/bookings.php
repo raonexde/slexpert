@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';require_admin();
+require_admin_permission('bookings');
 $status=in_array($_GET['status']??'', ['provisional','confirmed','in_progress','completed','cancelled'],true)?(string)$_GET['status']:'';$query=trim((string)($_GET['q']??''));
 $sql='SELECT b.*,r.reference,r.customer_name,r.customer_email,r.request_type,r.travelers,r.duration,a.company_name FROM bookings b JOIN tour_requests r ON r.id=b.request_id LEFT JOIN b2b_agents a ON a.id=b.b2b_agent_id WHERE 1=1';$params=[];if($status!==''){$sql.=' AND b.status=?';$params[]=$status;}if($query!==''){$sql.=' AND (b.booking_reference LIKE ? OR r.reference LIKE ? OR r.customer_name LIKE ? OR r.customer_email LIKE ? OR a.company_name LIKE ?)';$like='%'.$query.'%';array_push($params,$like,$like,$like,$like,$like);}$sql.=' ORDER BY b.created_at DESC LIMIT 250';$stmt=db()->prepare($sql);$stmt->execute($params);$bookings=$stmt->fetchAll();$counts=db()->query('SELECT status,COUNT(*) total FROM bookings GROUP BY status')->fetchAll(PDO::FETCH_KEY_PAIR);
 $statusLabels=['provisional'=>'Vorläufig','confirmed'=>'Bestätigt','in_progress'=>'Reise läuft','completed'=>'Abgeschlossen','cancelled'=>'Storniert'];$paymentLabels=['unpaid'=>'Offen','partial'=>'Teilbezahlt','paid'=>'Bezahlt','refunded'=>'Erstattet'];

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
+require_admin_permission('guides');
 $status = in_array($_GET['status']??'', ['pending','approved','suspended','rejected'], true) ? (string)$_GET['status'] : '';
 $query = trim((string)($_GET['q']??''));
 $sql = 'SELECT * FROM guides WHERE 1=1'; $params=[];

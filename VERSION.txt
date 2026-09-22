@@ -1,4 +1,12 @@
-12.7
+12.8
+
+- protected admin user management for creating, editing, activating and deactivating staff accounts
+- main-administrator role with unrestricted access and exclusive control of users and permissions
+- separate view and manage permissions for enquiries, bookings, customers, B2B agents, tours, hotels, catalogue, categories, vehicles, guides, settings and customer planning
+- server-side permission checks on every protected section and admin planner submission
+- permission-aware navigation and dashboard with a clear read-only mode
+- automatic migration promotes all existing admin accounts to main administrators so no access is lost
+- password reset, unique-email checks and protection against removing the final active main administrator
 
 - dedicated Hotel Management section with search, country/status filters, editing, activation, safe archiving and deletion
 - bilingual room categories with room images, occupancy, inventory, base prices and seasonal date-based rates

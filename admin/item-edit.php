@@ -1,11 +1,16 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
-require_admin();
 $id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
 $hotelMode = isset($_GET['hotel']) || (($_POST['hotel_mode'] ?? '') === '1');
+if ($id > 0 && !$hotelMode) {
+    $permissionTypeStmt=db()->prepare('SELECT type FROM catalog_items WHERE id=?');$permissionTypeStmt->execute([$id]);
+    $hotelMode=$permissionTypeStmt->fetchColumn()==='accommodation';
+}
+if (request_is_post() && ($_POST['type'] ?? '') === 'accommodation') $hotelMode=true;
+require_admin_permission($hotelMode ? 'hotels' : 'catalog', request_is_post());
 $item = [
-    'id'=>0,'destination_id'=>(int)($_GET['destination_id'] ?? 0),'type'=>'accommodation',
+    'id'=>0,'destination_id'=>(int)($_GET['destination_id'] ?? 0),'type'=>$hotelMode?'accommodation':'activity',
     'classification_id'=>0,'star_rating'=>0,'market_segment'=>'','sltda_registration_number'=>'','sltda_registration_expiry'=>'',
     'name_de'=>'','name_en'=>'','description_de'=>'','description_en'=>'','meta_de'=>'','meta_en'=>'',
     'facilities_de'=>'','facilities_en'=>'','opening_hours_de'=>'','opening_hours_en'=>'','duration_minutes'=>0,'booking_required'=>0,
@@ -126,7 +131,7 @@ $adminPage=$hotelMode?'hotels':'catalog';$adminTitle=$hotelMode?($id?'Hotel bear
         <input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="hotel_mode" value="<?= $hotelMode?'1':'0' ?>">
         <section class="admin-card form-card"><div class="card-head"><div><h2>Zuordnung</h2><p>Ort, Reiseziel und Kategorie</p></div></div><div class="form-grid">
             <div class="form-field"><div class="field-label-row"><label for="destination-id">Ort / Reiseziel</label><a class="inline-create" href="destination-edit.php?return_to=item-edit">＋ Neuen Ort hinzufügen</a></div><select id="destination-id" name="destination_id" required><option value="">Bitte wählen</option><?php foreach($destinations as $destination):?><option value="<?= (int)$destination['id'] ?>"<?= selected($destination['id'],$item['destination_id']) ?>><?= e($destination['country_code']==='MV'?'Malediven · ':'Sri Lanka · ') ?><?= e($destination['name_de']) ?></option><?php endforeach;?></select><small>Der neue Ort erscheint anschließend automatisch in dieser Liste.</small></div>
-            <?php if($hotelMode):?><label>Typ<input value="Hotel / Unterkunft" disabled><input type="hidden" name="type" value="accommodation"></label><?php else:?><label>Typ<select name="type"><?php foreach($typeLabels as $value=>$label):?><option value="<?= e($value) ?>"<?= selected($value,$item['type']) ?>><?= e($label) ?></option><?php endforeach;?></select></label><?php endif;?>
+            <?php if($hotelMode):?><label>Typ<input value="Hotel / Unterkunft" disabled><input type="hidden" name="type" value="accommodation"></label><?php else:?><label>Typ<select name="type"><?php foreach($typeLabels as $value=>$label):if($value==='accommodation'&&!admin_can('hotels'))continue;?><option value="<?= e($value) ?>"<?= selected($value,$item['type']) ?>><?= e($label) ?></option><?php endforeach;?></select></label><?php endif;?>
             <div class="form-field"><div class="field-label-row"><label for="classification-id">Unterkategorie / Klassifizierung</label><a class="inline-create" href="classifications.php">Kategorien verwalten</a></div><select id="classification-id" name="classification_id"><option value="0">Keine Unterkategorie</option><?php foreach($classifications as $classification):?><option value="<?= (int)$classification['id'] ?>" data-item-type="<?= e($classification['item_type']) ?>"<?= selected($classification['id'],$item['classification_id']) ?>><?= e($classification['name_de']) ?><?= $classification['active']?'':' · inaktiv' ?></option><?php endforeach;?></select><small>Die Liste wird passend zum ausgewählten Typ gefiltert.</small></div>
         </div></section>
         <section class="admin-card form-card"><div class="card-head"><div><h2>Titel & Beschreibung</h2><p>Deutsch und Englisch</p></div></div><div class="form-grid">
