@@ -1,4 +1,7 @@
-12.8
+12.8.1
+
+- fixed new-hotel creation: the automatic Double room now supplies all 19 required database values
+- fixed failed-create handling so a rolled-back temporary auto-increment ID is never opened as an existing hotel
 
 - protected admin user management for creating, editing, activating and deactivating staff accounts
 - main-administrator role with unrestricted access and exclusive control of users and permissions

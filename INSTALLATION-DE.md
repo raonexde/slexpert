@@ -32,15 +32,17 @@ Die Datenbank, Tabellen und ersten Beispielinhalte werden automatisch erstellt.
 
 Version 12.6 verwendet **Sri Lanka Expert by Raonex GmbH** als Standardmarke. Firmenadresse, Telefon, E-Mail, Website und Social-Media-Links können danach unter **Admin → Einstellungen** bearbeitet werden. Nicht ausgefüllte Social-Media-Links werden im Footer nicht angezeigt.
 
-## Aktualisierung auf Version 12.8
+## Aktualisierung auf Version 12.8.1
 
 1. Datenbank und Website-Dateien sichern.
-2. Die Dateien aus Version 12.8 über die bisherigen Programmdateien kopieren. Vorhandene `config.local.php`, Uploads und gespeicherte Dokumente nicht löschen.
+2. Die Dateien aus Version 12.8.1 über die bisherigen Programmdateien kopieren. Vorhandene `config.local.php`, Uploads und gespeicherte Dokumente nicht löschen.
 3. Eine beliebige Website-Seite öffnen. Die Migration `020_admin_users_permissions.php` wird automatisch einmalig ausgeführt.
 4. Als bisheriger Administrator anmelden und **Admin → Benutzer & Rechte** öffnen.
 5. Weitere Benutzer anlegen und pro Bereich „Ansehen“ und/oder „Bearbeiten“ vergeben.
 
 Alle bereits vorhandenen Admin-Zugänge werden beim Upgrade automatisch zu Hauptadministratoren. Dadurch bleibt der bisherige Vollzugriff erhalten. Die Benutzerverwaltung selbst kann nur von Hauptadministratoren geöffnet werden. Mindestens ein aktiver Hauptadministrator muss bestehen bleiben.
+
+Version 12.8.1 enthält zusätzlich die Korrektur für das Anlegen neuer Hotels. Ein zuvor fehlgeschlagener Versuch muss nicht gelöscht werden: Die Transaktion wurde vollständig zurückgerollt; lediglich die Auto-Increment-Nummer kann eine Lücke enthalten.
 
 ## Aktualisierung auf Version 12.7
 

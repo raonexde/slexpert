@@ -1,4 +1,4 @@
-# Sri Lanka Expert · Version 12.8
+# Sri Lanka Expert · Version 12.8.1
 
 Responsive German/English tour planning website built with PHP 8.1+ and MySQL 8/MariaDB 10.4+.
 
@@ -197,6 +197,8 @@ Version 12.6 adds a dedicated hiking profile to ready-made tours. The included *
 Version 12.7 adds **Admin → Hotel Management**. Existing accommodation entries remain intact and receive an editable Double room category using their previous per-room/night price. Administrators can add any number of room categories, room images, occupancy rules, inventory, seasonal prices and minimum stays. A hotel can be linked to specific local services. Unused records can be deleted; hotels or rooms referenced by enquiries or tours are archived to preserve historical documents. The selected room category and price are validated by the server, stored as a snapshot and printed on the itinerary or hotel proposal.
 
 Version 12.8 adds **Admin → Benutzer & Rechte**. Main administrators have unrestricted access and can create staff accounts, reset passwords, activate or deactivate users and assign separate **view** and **manage** rights for each administration section. Permissions are enforced on the server as well as in the menu and dashboard. View-only users can inspect a section but its write forms are disabled and POST actions are rejected. Existing admin accounts are promoted automatically during the one-time upgrade so the update cannot lock out the current administrator. User management itself is intentionally limited to main administrators, and the last active main administrator cannot be deactivated or demoted.
+
+Version 12.8.1 corrects new-hotel creation. The automatic initial Double room now inserts the complete database row, and a failed transaction returns to the blank creation form instead of attempting to open an auto-increment ID that was rolled back.
 
 Each accommodation can be enabled for Beach Vacation, Ayurveda stays, Maldives stays, or any combination. The same edit form controls standard occupancy, maximum occupancy with an extra bed, the adult extra-bed percentage, child percentage, child age limit and allowed Ayurveda night packages. Sights, activities, shops and Additional Services can also be enabled separately for each single-hotel area.
 

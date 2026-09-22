@@ -45,6 +45,7 @@ $classifications=db()->query('SELECT * FROM catalog_classifications ORDER BY ite
 
 if (request_is_post()) {
     verify_csrf();
+    $originalId = $id;
     try {
         $allowedTypes = ['accommodation','sight','activity','restaurant','spice_garden','shop','service'];
         $type = $hotelMode ? 'accommodation' : (in_array($_POST['type'] ?? '', $allowedTypes, true) ? $_POST['type'] : 'activity');
@@ -111,13 +112,13 @@ if (request_is_post()) {
             }
             $roomCheck=$pdo->prepare('SELECT COUNT(*) FROM hotel_room_types WHERE hotel_id=?');$roomCheck->execute([$id]);
             if((int)$roomCheck->fetchColumn()===0){
-                $pdo->prepare("INSERT INTO hotel_room_types (hotel_id,code,name_de,name_en,description_de,description_en,bed_type_de,bed_type_en,amenities_de,amenities_en,base_rate_per_room_night,standard_guests,max_guests,extra_bed_allowed,extra_bed_percent,child_percent,featured,active,sort_order) VALUES (?,'double-room','Doppelzimmer','Double room','','','Doppelbett oder zwei Einzelbetten','Double bed or twin beds','','',?,?,?,?,?,1,1,10)")
+                $pdo->prepare("INSERT INTO hotel_room_types (hotel_id,code,name_de,name_en,description_de,description_en,bed_type_de,bed_type_en,amenities_de,amenities_en,base_rate_per_room_night,standard_guests,max_guests,extra_bed_allowed,extra_bed_percent,child_percent,featured,active,sort_order) VALUES (?,'double-room','Doppelzimmer','Double room','','','Doppelbett oder zwei Einzelbetten','Double bed or twin beds','','',?,?,?,1,?,?,1,1,10)")
                     ->execute([$id,$record['price_per_person'],$record['standard_room_guests'],$record['max_guests_with_extra_bed'],$record['extra_bed_percent'],$record['child_percent']]);
             }
         }
         $pdo->commit();
         flash('success',$hotelMode?'Hotel wurde gespeichert.':'Reisebaustein wurde gespeichert.');redirect($hotelMode?'admin/hotels.php':'admin/catalog.php');
-    } catch(Throwable $exception){if(isset($pdo)&&$pdo instanceof PDO&&$pdo->inTransaction())$pdo->rollBack();flash('error','Speichern fehlgeschlagen: '.$exception->getMessage());redirect('admin/item-edit.php'.($id?'?id='.$id.($hotelMode?'&hotel=1':''):($hotelMode?'?hotel=1':'')));}
+    } catch(Throwable $exception){if(isset($pdo)&&$pdo instanceof PDO&&$pdo->inTransaction())$pdo->rollBack();flash('error','Speichern fehlgeschlagen: '.$exception->getMessage());redirect('admin/item-edit.php'.($originalId?'?id='.$originalId.($hotelMode?'&hotel=1':''):($hotelMode?'?hotel=1':'')));}
 }
 
 $typeLabels=['accommodation'=>'Unterkunft','sight'=>'Sehenswürdigkeit','activity'=>'Aktivitätszentrum','restaurant'=>'Restaurant','spice_garden'=>'Gewürzgarten','shop'=>'Shop / Einkaufsstopp','service'=>'Zusatzleistung / Ayurveda-Paket'];
